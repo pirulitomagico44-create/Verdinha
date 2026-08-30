@@ -271,9 +271,9 @@ async function main() {
     if (hasSession) {
       mensagem('📷 Sessão de QR Code detectada. Conectando automaticamente...');
       startBot(false);
-    } else {
-      const { method } = await promptConnectionMethod();
-      startBot(method === 'code');
+    } else {  
+  startBot(false);
+     
     }
   } catch (error) {
     aviso(`❌ Erro inesperado: ${error.message}`);
