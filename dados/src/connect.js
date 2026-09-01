@@ -1691,6 +1691,13 @@ async function createBotSocket(authDir) {
 
                 forbidden403Attempts = 0;
 
+                // Durante o pareamento, não reiniciar imediatamente após 428/401.
+                // Isso evita gerar vários códigos antes que o usuário consiga vinculá-los.
+                if (codeMode && (reason === 428 || reason === 401)) {
+                    console.log('📱 Pareamento em andamento. Aguardando nova conexão sem gerar outro código imediatamente...');
+                    return;
+                }
+
                 if (reason === DisconnectReason.badSession || reason === DisconnectReason.loggedOut) {
                     await clearAuthDir(authDir);
                     console.log('🔄 Nova autenticação será necessária na próxima inicialização.');
