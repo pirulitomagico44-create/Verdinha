@@ -270,9 +270,9 @@ async function main() {
     const hasSession = await checkAutoConnect();
     if (hasSession) {
       mensagem('📷 Sessão de QR Code detectada. Conectando automaticamente...');
-      startBot(false);
+      startBot(true);
     } else {  
-  startBot(false);
+  startBot(true);
      
     }
   } catch (error) {
