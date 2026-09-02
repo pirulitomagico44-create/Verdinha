@@ -1691,7 +1691,7 @@ async function createBotSocket(authDir) {
 
                 forbidden403Attempts = 0;
 
-                if (reason === DisconnectReason.badSession || reason === DisconnectReason.loggedOut) {
+                if (!codeMode && (reason === DisconnectReason.badSession || reason === DisconnectReason.loggedOut)) {
                     await clearAuthDir(authDir);
                     console.log('🔄 Nova autenticação será necessária na próxima inicialização.');
                 }
