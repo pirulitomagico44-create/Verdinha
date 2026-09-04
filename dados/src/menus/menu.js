@@ -10,7 +10,7 @@ export default async function menu(prefix, botName = "MeuBot", userName = "Usuá
     const formattedHeader = header.replace(/#user#/g, userName);
     return `${formattedHeader}
 
-${menuTopBorder}${separatorIcon} *MENU PRINCIPAL*
+${menuTopBorder}${separatorIcon} *CENTRAL DA VERDINHA*
 ${middleBorder}
 ${middleBorder}${menuItemIcon}${prefix}menudown
 ${middleBorder}${menuItemIcon}${prefix}menulogos
