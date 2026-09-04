@@ -105,7 +105,7 @@ Exemplo:
             text.toLowerCase().includes("api key inválida")
         ) {
 
-            return apiInvalida;
+            return "";
         }
 
 
