@@ -32465,6 +32465,30 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           await reply("❌ Ocorreu um erro interno. Tente novamente em alguns minutos.");
         }
         break;
+      case 'farmaraura':
+        try {
+          if (!isGroup) return reply("isso so pode ser usado em grupo 💔");
+          if (!isModoBn) return reply('❌ O modo brincadeira não está ativo nesse grupo.');
+          if (!menc_os2) return reply('Marque um usuário.');
+
+          const farmAuraGif = path.join(__dirname, 'midias', 'farmaraura.gif');
+          const farmAuraCaption = `@${getUserName(menc_os2)} farmou tanta aura que até o ursinho Pimpão ficou com inveja 🗿 KWKWKWKWKWKWKW`;
+
+          if (!fs.existsSync(farmAuraGif)) {
+            return reply('❌ O GIF da farmaraura não foi encontrado.');
+          }
+
+          await nazu.sendMessage(from, {
+            video: fs.readFileSync(farmAuraGif),
+            caption: farmAuraCaption,
+            mentions: [menc_os2],
+            gifPlayback: true
+          });
+        } catch (e) {
+          console.error(e);
+          await reply("❌ Ocorreu um erro interno. Tente novamente em alguns minutos.");
+        }
+        break;
       case 'chute':
       case 'chutar':
       case 'tapa':
