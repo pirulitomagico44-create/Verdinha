@@ -32471,7 +32471,7 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           if (!isModoBn) return reply('❌ O modo brincadeira não está ativo nesse grupo.');
           if (!menc_os2) return reply('Marque um usuário.');
 
-          const farmAuraGif = path.join(__dirname, 'midias', 'farmaraura.gif');
+          const farmAuraGif = path.join(__dirname, '..', 'midias', 'farmaraura.gif');
           const farmAuraCaption = `@${getUserName(menc_os2)} farmou tanta aura que até o ursinho Pimpão ficou com inveja 🗿 KWKWKWKWKWKWKW`;
 
           if (!fs.existsSync(farmAuraGif)) {
