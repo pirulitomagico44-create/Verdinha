@@ -32533,7 +32533,7 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           let media = gamesData.games2[command];
 
           const midiasLocais = {
-            tapa: 'tapa.gif',
+            tapa: 'tapa.mp4',
             soco: 'tapa.gif',
             socar: 'tapa.gif',
             beijo: 'beijar.gif',
