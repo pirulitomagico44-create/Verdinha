@@ -32531,6 +32531,41 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           };
           let responseText = GamezinData[command].replaceAll('#nome#', `@${getUserName(menc_os2)}`) || `Voce acabou de dar um(a) ${command} no(a) @${getUserName(menc_os2)}`;
           let media = gamesData.games2[command];
+
+          const midiasLocais = {
+            tapa: 'tapa.gif',
+            soco: 'tapa.gif',
+            socar: 'tapa.gif',
+            beijo: 'beijar.gif',
+            beijar: 'beijar.gif',
+            abraco: 'abraço.gif',
+            abracar: 'abraço.gif',
+            mata: 'matar.gif',
+            matar: 'matar.gif',
+            morder: 'morder.gif',
+            mordida: 'morder.gif',
+            lamber: 'lambida.gif',
+            lambida: 'lambida.gif',
+            explodir: 'explodir.gif',
+            tomate: 'tomate.gif'
+          };
+
+          const midiaLocal = midiasLocais[command];
+
+          if (midiaLocal) {
+            const caminhoMidia = path.join(__dirname, '..', 'midias', midiaLocal);
+
+            if (fs.existsSync(caminhoMidia)) {
+              await nazu.sendMessage(from, {
+                video: fs.readFileSync(caminhoMidia),
+                caption: responseText,
+                mentions: [menc_os2],
+                gifPlayback: true
+              });
+              break;
+            }
+          }
+
           if (media?.image) {
             await nazu.sendMessage(from, {
               image: media.image,
