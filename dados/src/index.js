@@ -32534,6 +32534,8 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
 
           const midiasLocais = {
             tapa: 'tapa.mp4',
+            soco: 'soco.mp4',
+            socar: 'soco.mp4',
             soco: 'tapa.gif',
             socar: 'tapa.gif',
             beijo: 'beijar.gif',
