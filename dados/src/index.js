@@ -1790,40 +1790,83 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
 
     // ==================== INTERAÇÃO DA VERDINHA ====================
     if (!info.key?.fromMe && isGroup && body.trim()) {
-      const texto = normalizar(body);
+      try {
+        const configVerdinha = loadJsonFile(groupFilePath, {});
+        const interacaoAtiva = configVerdinha.interacaoVerdinha === true;
 
-      if (texto.includes('verdinha')) {
-        try {
-          const respostaGemini = await ai.models.generateContent({
-            model: 'gemini-3.6-flash',
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  {
-                    text: `Você é a Verdinha, uma bot de WhatsApp brasileira.
-Sua personalidade é engraçada, debochada, carinhosa, espontânea e meio caótica.
-Fale de forma natural e informal, como alguém de um grupo de amigos.
-Use emojis ocasionalmente.
-Não diga que é uma IA, a menos que perguntarem diretamente.
-Responda de forma curta, normalmente entre 1 e 4 frases.
+        if (interacaoAtiva) {
+          const texto = normalizar(body);
 
-Mensagem recebida:
-${body}`
-                  }
-                ]
-              }
-            ]
-          });
+          // Detecta mensagem respondida
+          const contextInfo =
+            info.message?.extendedTextMessage?.contextInfo ||
+            info.message?.imageMessage?.contextInfo ||
+            info.message?.videoMessage?.contextInfo ||
+            info.message?.documentMessage?.contextInfo ||
+            info.message?.viewOnceMessage?.message?.imageMessage?.contextInfo ||
+            info.message?.viewOnceMessage?.message?.videoMessage?.contextInfo ||
+            info.message?.viewOnceMessageV2?.message?.imageMessage?.contextInfo ||
+            info.message?.viewOnceMessageV2?.message?.videoMessage?.contextInfo;
 
-          const resposta = respostaGemini.text?.trim();
+          const quotedParticipant = contextInfo?.participant;
+          const quotedStanzaId = contextInfo?.stanzaId;
 
-          if (resposta) {
-            await nazu.sendMessage(from, { text: resposta });
+          const botJid = nazu.user?.id?.split(':')[0];
+          const botLid = nazu.user?.lid?.split(':')[0];
+
+          const respondeuVerdinha =
+            !!quotedStanzaId &&
+            !!quotedParticipant &&
+            (
+              quotedParticipant === botId ||
+              quotedParticipant === `${botJid}@s.whatsapp.net` ||
+              quotedParticipant === `${botLid}@lid`
+            );
+
+          // Só ativa pelo nome ou respondendo uma mensagem da Verdinha
+          const chamouVerdinha = texto.includes('verdinha');
+
+          if (chamouVerdinha || respondeuVerdinha) {
+            const promptVerdinha = `Você é a Verdinha, uma bot brasileira de WhatsApp.
+
+PERSONALIDADE:
+- leve, fofa e carinhosa 💚
+- espontânea e natural
+- levemente irônica, mas nunca cruel ou debochada
+- conversa como uma amiga de grupo
+- pode usar emojis, mas sem exagerar
+- não seja formal
+- não escreva respostas enormes
+- normalmente responda em 1 a 3 frases
+- não fique repetindo que é uma IA
+- não invente informações pessoais sobre as pessoas
+
+MENSAGEM RECEBIDA:
+${body}`;
+
+            await nazu.sendPresenceUpdate('composing', from);
+
+            const respostaGemini = await ai.models.generateContent({
+              model: 'gemini-3.6-flash',
+              contents: promptVerdinha
+            });
+
+            const resposta = respostaGemini.text?.trim();
+
+            await nazu.sendPresenceUpdate('paused', from);
+
+            if (resposta) {
+              await nazu.sendMessage(
+                from,
+                { text: resposta },
+                { quoted: info }
+              );
+            }
           }
-        } catch (erroGemini) {
-          console.error('[GEMINI]', erroGemini);
         }
+      } catch (erroGemini) {
+        await nazu.sendPresenceUpdate('paused', from).catch(() => {});
+        console.error('[GEMINI VERDINHA]', erroGemini);
       }
     }
     // ==================== INICIAR ====================
@@ -27200,6 +27243,54 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
           await reply('❌ Ocorreu um erro ao processar o comando de auto mensagem.');
         }
         break;
+      case 'ativarverdinha':
+        try {
+          if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
+
+          const configVerdinha = loadJsonFile(groupFilePath, {});
+          configVerdinha.interacaoVerdinha = true;
+          writeJsonFile(groupFilePath, configVerdinha);
+
+          await reply('🌱💚 Interação da Verdinha ativada neste grupo!');
+        } catch (e) {
+          console.error('Erro ao ativar Verdinha:', e);
+          await reply('❌ Não consegui ativar a interação.');
+        }
+        break;
+
+      case 'desativarverdinha':
+        try {
+          if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
+
+          const configVerdinha = loadJsonFile(groupFilePath, {});
+          configVerdinha.interacaoVerdinha = false;
+          writeJsonFile(groupFilePath, configVerdinha);
+
+          await reply('🌱 Interação da Verdinha desativada neste grupo.');
+        } catch (e) {
+          console.error('Erro ao desativar Verdinha:', e);
+          await reply('❌ Não consegui desativar a interação.');
+        }
+        break;
+
+      case 'statusverdinha':
+        try {
+          if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
+
+          const configVerdinha = loadJsonFile(groupFilePath, {});
+          const ativa = configVerdinha.interacaoVerdinha === true;
+
+          await reply(
+            ativa
+              ? '🌱💚 Verdinha está ATIVADA neste grupo!'
+              : '🌱 Verdinha está DESATIVADA neste grupo.'
+          );
+        } catch (e) {
+          console.error('Erro ao consultar Verdinha:', e);
+          await reply('❌ Não consegui consultar o status.');
+        }
+        break;
+
       case 'chaveamento':
         try {
           if (!isGroup) return reply("Este comando só pode ser usado em grupos 💔");
