@@ -32471,7 +32471,7 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           if (!isModoBn) return reply('❌ O modo brincadeira não está ativo nesse grupo.');
           if (!menc_os2) return reply('Marque um usuário.');
 
-          const farmAuraMp4 = path.join(__dirname, '..', 'midias', 'gatodanca.mp4');
+          const farmAuraMp4 = path.join(__dirname, '..', 'midias', 'gatosfofos.mp4');
           const farmAuraCaption = `@${getUserName(menc_os2)} farmou tanta aura que até os gatos começaram a aprender 🗿🐈`;
 
           if (!fs.existsSync(farmAuraMp4)) {
