@@ -32471,15 +32471,15 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           if (!isModoBn) return reply('❌ O modo brincadeira não está ativo nesse grupo.');
           if (!menc_os2) return reply('Marque um usuário.');
 
-          const farmAuraGif = path.join(__dirname, '..', 'midias', 'farmaraura.gif');
-          const farmAuraCaption = `@${getUserName(menc_os2)} farmou tanta aura que até o ursinho Pimpão ficou com inveja 🗿 KWKWKWKWKWKWKW`;
+          const farmAuraMp4 = path.join(__dirname, '..', 'midias', 'farmaraura.mp4');
+          const farmAuraCaption = `@${getUserName(menc_os2)} farmou tanta aura que até os gatos começaram a aprender 🗿🐈`;
 
-          if (!fs.existsSync(farmAuraGif)) {
+          if (!fs.existsSync(farmAuraMp4)) {
             return reply('❌ O GIF da farmaraura não foi encontrado.');
           }
 
           await nazu.sendMessage(from, {
-            video: fs.readFileSync(farmAuraGif),
+            video: fs.readFileSync(farmAuraMp4),
             caption: farmAuraCaption,
             mentions: [menc_os2],
             gifPlayback: true
