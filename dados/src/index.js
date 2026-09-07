@@ -32536,20 +32536,18 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
             tapa: 'tapa.mp4',
             soco: 'soco.mp4',
             socar: 'soco.mp4',
-            soco: 'tapa.gif',
-            socar: 'tapa.gif',
-            beijo: 'beijar.gif',
-            beijar: 'beijar.gif',
-            abraco: 'abraço.gif',
-            abracar: 'abraço.gif',
-            mata: 'matar.gif',
-            matar: 'matar.gif',
-            morder: 'morder.gif',
-            mordida: 'morder.gif',
-            lamber: 'lambida.gif',
-            lambida: 'lambida.gif',
-            explodir: 'explodir.gif',
-            tomate: 'tomate.gif'
+            beijo: 'beijar.mp4',
+            beijar: 'beijar.mp4',
+            abraco: 'abraço.mp4',
+            abracar: 'abraço.mp4',
+            mata: 'matar.mp4',
+            matar: 'matar.mp4',
+            morder: 'morder.mp4',
+            mordida: 'morder.mp4',
+            lamber: 'lambida.mp4',
+            lambida: 'lambida.mp4',
+            explodir: 'explodir.mp4',
+            tomate: 'tomate.mp4'
           };
 
           const midiaLocal = midiasLocais[command];
