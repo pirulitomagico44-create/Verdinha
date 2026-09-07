@@ -1789,47 +1789,41 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
     const body = getMessageText(info.message) || info?.text || '';
 
     // ==================== INTERAÇÃO DA VERDINHA ====================
-    if (isGroup && body.trim()) {
+    if (!info.key?.fromMe && isGroup && body.trim()) {
       const texto = normalizar(body);
 
-      const respostasVerdinha = {
-        oi: [
-          'oiii 😭💚',
-          'oi, criatura 🌱',
-          'olááá 💚'
-        ],
-        bomdia: [
-          'bom diaaa 🌱💚',
-          'bom dia, povo 😭',
-          'bom dia! sobrevivendo por enquanto'
-        ],
-        verdinha: [
-          'que foi? 😭💚',
-          'me chamou?',
-          'fala comigo, criatura 🌱'
-        ],
-        kkk: [
-          'KKKKKKKKKK 😭',
-          'tá rindo do quê criatura?',
-          'eu também achei engraçado 💀'
-        ]
-      };
+      if (texto.includes('verdinha')) {
+        try {
+          const respostaGemini = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    text: `Você é a Verdinha, uma bot de WhatsApp brasileira.
+Sua personalidade é engraçada, debochada, carinhosa, espontânea e meio caótica.
+Fale de forma natural e informal, como alguém de um grupo de amigos.
+Use emojis ocasionalmente.
+Não diga que é uma IA, a menos que perguntarem diretamente.
+Responda de forma curta, normalmente entre 1 e 4 frases.
 
-      let resposta;
+Mensagem recebida:
+${body}`
+                  }
+                ]
+              }
+            ]
+          });
 
-      if (/^(oi|ola|olá)( |!|$)/i.test(texto)) {
-        resposta = respostasVerdinha.oi;
-      } else if (/bom dia/i.test(texto)) {
-        resposta = respostasVerdinha.bomdia;
-      } else if (texto.includes('verdinha')) {
-        resposta = respostasVerdinha.verdinha;
-      } else if (/k{3,}/i.test(texto)) {
-        resposta = respostasVerdinha.kkk;
-      }
+          const resposta = respostaGemini.text?.trim();
 
-      if (resposta) {
-        const escolhida = resposta[Math.floor(Math.random() * resposta.length)];
-        await nazu.sendMessage(from, { text: escolhida });
+          if (resposta) {
+            await nazu.sendMessage(from, { text: resposta });
+          }
+        } catch (erroGemini) {
+          console.error('[GEMINI]', erroGemini);
+        }
       }
     }
     // ==================== INICIAR ====================
