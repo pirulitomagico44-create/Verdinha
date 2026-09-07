@@ -1795,7 +1795,7 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
       if (texto.includes('verdinha')) {
         try {
           const respostaGemini = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3.6-flash',
             contents: [
               {
                 role: 'user',
