@@ -1,6 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp'
+import { GoogleGenAI } from '@google/genai';
+
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY
+});
 function patchBaileysNewsletterFollow() {
   try {
 
@@ -1782,6 +1787,51 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
       return message.conversation || message.extendedTextMessage?.text || message.imageMessage?.caption || message.videoMessage?.caption || message.documentWithCaptionMessage?.message?.documentMessage?.caption || message.viewOnceMessage?.message?.imageMessage?.caption || message.viewOnceMessage?.message?.videoMessage?.caption || message.viewOnceMessageV2?.message?.imageMessage?.caption || message.viewOnceMessageV2?.message?.videoMessage?.caption || message.editedMessage?.message?.protocolMessage?.editedMessage?.extendedTextMessage?.text || message.editedMessage?.message?.protocolMessage?.editedMessage?.imageMessage?.caption || '';
     };
     const body = getMessageText(info.message) || info?.text || '';
+
+    // ==================== INTERAÇÃO DA VERDINHA ====================
+    if (isGroup && body.trim()) {
+      const texto = normalizar(body);
+
+      const respostasVerdinha = {
+        oi: [
+          'oiii 😭💚',
+          'oi, criatura 🌱',
+          'olááá 💚'
+        ],
+        bomdia: [
+          'bom diaaa 🌱💚',
+          'bom dia, povo 😭',
+          'bom dia! sobrevivendo por enquanto'
+        ],
+        verdinha: [
+          'que foi? 😭💚',
+          'me chamou?',
+          'fala comigo, criatura 🌱'
+        ],
+        kkk: [
+          'KKKKKKKKKK 😭',
+          'tá rindo do quê criatura?',
+          'eu também achei engraçado 💀'
+        ]
+      };
+
+      let resposta;
+
+      if (/^(oi|ola|olá)( |!|$)/i.test(texto)) {
+        resposta = respostasVerdinha.oi;
+      } else if (/bom dia/i.test(texto)) {
+        resposta = respostasVerdinha.bomdia;
+      } else if (texto.includes('verdinha')) {
+        resposta = respostasVerdinha.verdinha;
+      } else if (/k{3,}/i.test(texto)) {
+        resposta = respostasVerdinha.kkk;
+      }
+
+      if (resposta) {
+        const escolhida = resposta[Math.floor(Math.random() * resposta.length)];
+        await nazu.sendMessage(from, { text: escolhida });
+      }
+    }
     // ==================== INICIAR ====================
     startAutoAcceptSystem(nazu, from);
 

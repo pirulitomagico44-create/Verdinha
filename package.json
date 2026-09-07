@@ -19,6 +19,7 @@
     "author": "Tokyo",
     "license": "ISC",
     "dependencies": {
+        "@google/genai": "^2.21.0",
         "@hapi/boom": "^10.0.1",
         "@img/sharp-wasm32": "^0.35.4",
         "axios": "^1.13.2",
