@@ -27243,13 +27243,17 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
           await reply('❌ Ocorreu um erro ao processar o comando de auto mensagem.');
         }
         break;
-      case 'ativarverdinha':
+       case 'ativarverdinha':
         try {
           if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
 
-          const configVerdinha = loadJsonFile(groupFilePath, {});
+          const groupFilePathVerdinha = pathz.join(GRUPOS_DIR, `${from}.json`);
+          const configVerdinha = fs.existsSync(groupFilePathVerdinha)
+            ? JSON.parse(fs.readFileSync(groupFilePathVerdinha, 'utf-8'))
+            : {};
+
           configVerdinha.interacaoVerdinha = true;
-          writeJsonFile(groupFilePath, configVerdinha);
+          writeJsonFile(groupFilePathVerdinha, configVerdinha);
 
           await reply('🌱💚 Interação da Verdinha ativada neste grupo!');
         } catch (e) {
@@ -27262,9 +27266,13 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
         try {
           if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
 
-          const configVerdinha = loadJsonFile(groupFilePath, {});
+          const groupFilePathVerdinha = pathz.join(GRUPOS_DIR, `${from}.json`);
+          const configVerdinha = fs.existsSync(groupFilePathVerdinha)
+            ? JSON.parse(fs.readFileSync(groupFilePathVerdinha, 'utf-8'))
+            : {};
+
           configVerdinha.interacaoVerdinha = false;
-          writeJsonFile(groupFilePath, configVerdinha);
+          writeJsonFile(groupFilePathVerdinha, configVerdinha);
 
           await reply('🌱 Interação da Verdinha desativada neste grupo.');
         } catch (e) {
@@ -27277,7 +27285,11 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
         try {
           if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
 
-          const configVerdinha = loadJsonFile(groupFilePath, {});
+          const groupFilePathVerdinha = pathz.join(GRUPOS_DIR, `${from}.json`);
+          const configVerdinha = fs.existsSync(groupFilePathVerdinha)
+            ? JSON.parse(fs.readFileSync(groupFilePathVerdinha, 'utf-8'))
+            : {};
+
           const ativa = configVerdinha.interacaoVerdinha === true;
 
           await reply(
