@@ -1791,7 +1791,10 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
     // ==================== INTERAÇÃO DA VERDINHA ====================
     if (!info.key?.fromMe && isGroup && body.trim()) {
       try {
-        const configVerdinha = loadJsonFile(groupFilePath, {});
+        const groupFilePathVerdinha = pathz.join(GRUPOS_DIR, `${from}.json`);
+        const configVerdinha = fs.existsSync(groupFilePathVerdinha)
+          ? JSON.parse(fs.readFileSync(groupFilePathVerdinha, 'utf-8'))
+          : {};
         const interacaoAtiva = configVerdinha.interacaoVerdinha === true;
 
         if (interacaoAtiva) {
