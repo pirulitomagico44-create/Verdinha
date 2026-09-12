@@ -27298,7 +27298,30 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
           await reply('❌ Ocorreu um erro ao processar o comando de auto mensagem.');
         }
         break;
-       case 'ativarverdinha':
+       case 'limparmemoria':
+    try {
+      if (!isGroup) {
+        return reply('❌ Esse comando só funciona em grupos.');
+      }
+
+      const groupFilePathVerdinha = pathz.join(GRUPOS_DIR, `${from}.json`);
+
+      const configVerdinha = fs.existsSync(groupFilePathVerdinha)
+        ? JSON.parse(fs.readFileSync(groupFilePathVerdinha, 'utf-8'))
+        : {};
+
+      configVerdinha.memoriaVerdinha = [];
+
+      writeJsonFile(groupFilePathVerdinha, configVerdinha);
+
+      await reply('🧠💚 Memória temporária deste grupo limpa! A Verdinha começou uma nova conversa.');
+    } catch (erroLimparMemoria) {
+      console.error('Erro ao limpar memória da Verdinha:', erroLimparMemoria);
+      await reply('❌ Não consegui limpar a memória deste grupo.');
+    }
+    break;
+
+  case 'ativarverdinha':
         try {
           if (!isGroup) return reply('❌ Esse comando só funciona em grupos.');
 
