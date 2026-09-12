@@ -27298,6 +27298,112 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
           await reply('❌ Ocorreu um erro ao processar o comando de auto mensagem.');
         }
         break;
+       case 'vmemoria':
+        try {
+          if (!isGroup) {
+            return reply('❌ Esse comando só funciona em grupos.');
+          }
+
+          const memoriaFilePath = pathz.join(GRUPOS_DIR, `${from}.json`);
+
+          const memoriaConfig = fs.existsSync(memoriaFilePath)
+            ? JSON.parse(fs.readFileSync(memoriaFilePath, 'utf-8'))
+            : {};
+
+          if (!Array.isArray(memoriaConfig.memoriaPermanenteVerdinha)) {
+            memoriaConfig.memoriaPermanenteVerdinha = [];
+          }
+
+          const subcomandoMemoria = (args[1] || '').toLowerCase();
+          const textoMemoria = args.slice(2).join(' ').trim();
+
+          if (!subcomandoMemoria) {
+            const listaMemorias = memoriaConfig.memoriaPermanenteVerdinha;
+
+            if (listaMemorias.length === 0) {
+              return reply('🧠💚 Ainda não existe nenhuma memória permanente neste grupo.');
+            }
+
+            let respostaMemoria = '🧠💚 *Memórias permanentes deste grupo:*\n\n';
+
+            listaMemorias.forEach((memoria, indice) => {
+              respostaMemoria += `${indice + 1}. ${memoria}\n`;
+            });
+
+            respostaMemoria += '\nUse `.vmemoria adicionar texto` para salvar outra.';
+            return reply(respostaMemoria);
+          }
+
+          if (subcomandoMemoria === 'adicionar' || subcomandoMemoria === 'add') {
+            if (!textoMemoria) {
+              return reply('❌ Escreva a memória que deseja adicionar.\n\nExemplo: .vmemoria adicionar João gosta de música.');
+            }
+
+            memoriaConfig.memoriaPermanenteVerdinha.push(textoMemoria);
+            writeJsonFile(memoriaFilePath, memoriaConfig);
+
+            return reply('🧠💚 Memória permanente adicionada com sucesso!');
+          }
+
+          if (subcomandoMemoria === 'apagar' || subcomandoMemoria === 'remover' || subcomandoMemoria === 'del') {
+            const numeroMemoria = Number(args[2]);
+
+            if (!Number.isInteger(numeroMemoria) || numeroMemoria < 1) {
+              return reply('❌ Informe o número da memória que deseja apagar.\n\nExemplo: .vmemoria apagar 2');
+            }
+
+            const indiceMemoria = numeroMemoria - 1;
+
+            if (!memoriaConfig.memoriaPermanenteVerdinha[indiceMemoria]) {
+              return reply('❌ Não encontrei uma memória com esse número.');
+            }
+
+            const memoriaRemovida =
+              memoriaConfig.memoriaPermanenteVerdinha.splice(indiceMemoria, 1)[0];
+
+            writeJsonFile(memoriaFilePath, memoriaConfig);
+
+            return reply(`🗑️💚 Memória apagada:\n${memoriaRemovida}`);
+          }
+
+          if (subcomandoMemoria === 'limpar') {
+            memoriaConfig.aguardandoConfirmacaoLimpezaVerdinha = true;
+            writeJsonFile(memoriaFilePath, memoriaConfig);
+
+            return reply(
+              '⚠️🧠 Isso apagará todas as memórias permanentes deste grupo.\n\n' +
+              'Para confirmar, use:\n' +
+              '`.vmemoria confirmar`'
+            );
+          }
+
+          if (subcomandoMemoria === 'confirmar') {
+            if (memoriaConfig.aguardandoConfirmacaoLimpezaVerdinha !== true) {
+              return reply('❌ Nenhuma limpeza de memória foi solicitada.');
+            }
+
+            memoriaConfig.memoriaPermanenteVerdinha = [];
+            memoriaConfig.aguardandoConfirmacaoLimpezaVerdinha = false;
+
+            writeJsonFile(memoriaFilePath, memoriaConfig);
+
+            return reply('🧹💚 Todas as memórias permanentes deste grupo foram apagadas.');
+          }
+
+          return reply(
+            '❌ Subcomando inválido.\n\n' +
+            'Use:\n' +
+            '`.vmemoria`\n' +
+            '`.vmemoria adicionar texto`\n' +
+            '`.vmemoria apagar número`\n' +
+            '`.vmemoria limpar`'
+          );
+        } catch (erroMemoriaVerdinha) {
+          console.error('Erro na memória permanente da Verdinha:', erroMemoriaVerdinha);
+          return reply('❌ Não consegui processar a memória da Verdinha.');
+        }
+        break;
+
        case 'limparmemoria':
     try {
       if (!isGroup) {
