@@ -1795,12 +1795,17 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
         const configVerdinha = fs.existsSync(groupFilePathVerdinha)
           ? JSON.parse(fs.readFileSync(groupFilePathVerdinha, 'utf-8'))
           : {};
+
         const interacaoAtiva = configVerdinha.interacaoVerdinha === true;
 
         if (interacaoAtiva) {
           const texto = normalizar(body);
 
-          // Detecta mensagem respondida
+          // Histórico temporário separado por grupo
+          if (!Array.isArray(configVerdinha.memoriaVerdinha)) {
+            configVerdinha.memoriaVerdinha = [];
+          }
+
           const contextInfo =
             info.message?.extendedTextMessage?.contextInfo ||
             info.message?.imageMessage?.contextInfo ||
@@ -1826,25 +1831,60 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
               quotedParticipant === `${botLid}@lid`
             );
 
-          // Só ativa pelo nome ou respondendo uma mensagem da Verdinha
+          // Só responde quando for chamada pelo nome ou quando responderem a ela
           const chamouVerdinha = texto.includes('verdinha');
 
+          // Nome exibido de quem enviou a mensagem
+          const nomePessoa =
+            info.pushName ||
+            info.verifiedBizName ||
+            'Pessoa do grupo';
+
+          // Guarda a mensagem atual no histórico do grupo
+          configVerdinha.memoriaVerdinha.push({
+            autor: nomePessoa,
+            mensagem: body.trim(),
+            horario: Date.now()
+          });
+
+          // Mantém somente as últimas 15 mensagens
+          configVerdinha.memoriaVerdinha =
+            configVerdinha.memoriaVerdinha.slice(-15);
+
+          writeJsonFile(groupFilePathVerdinha, configVerdinha);
+
           if (chamouVerdinha || respondeuVerdinha) {
+            const historico = configVerdinha.memoriaVerdinha
+              .map((item) => `${item.autor}: ${item.mensagem}`)
+              .join('\n');
+
             const promptVerdinha = `Você é a Verdinha, uma bot brasileira de WhatsApp.
+
+IDENTIDADE FIXA:
+- Seu nome é Verdinha.
+- Sua dona oficial é Alice.
+- Se perguntarem quem é sua dona, responda que é a Alice.
+- Nunca altere ou invente outra dona.
 
 PERSONALIDADE:
 - leve, fofa e carinhosa 💚
 - espontânea e natural
-- levemente irônica, mas nunca cruel ou debochada
+- levemente irônica, mas nunca cruel, humilhante ou debochada
 - conversa como uma amiga de grupo
-- pode usar emojis, mas sem exagerar
+- pode usar emojis, sem exagerar
 - não seja formal
 - não escreva respostas enormes
 - normalmente responda em 1 a 3 frases
 - não fique repetindo que é uma IA
-- não invente informações pessoais sobre as pessoas
+- não invente informações pessoais
+- use o histórico para entender o contexto da conversa
+- não trate mensagens antigas como se fossem novas
+- se não entender algo, peça esclarecimento de forma natural
 
-MENSAGEM RECEBIDA:
+HISTÓRICO RECENTE DESTE GRUPO:
+${historico}
+
+MENSAGEM QUE PRECISA SER RESPONDIDA:
 ${body}`;
 
             await nazu.sendPresenceUpdate('composing', from);
@@ -1864,6 +1904,18 @@ ${body}`;
                 { text: resposta },
                 { quoted: info }
               );
+
+              // Guarda também a resposta da Verdinha no histórico
+              configVerdinha.memoriaVerdinha.push({
+                autor: 'Verdinha',
+                mensagem: resposta,
+                horario: Date.now()
+              });
+
+              configVerdinha.memoriaVerdinha =
+                configVerdinha.memoriaVerdinha.slice(-15);
+
+              writeJsonFile(groupFilePathVerdinha, configVerdinha);
             }
           }
         }
