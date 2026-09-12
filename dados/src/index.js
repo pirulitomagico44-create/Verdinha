@@ -27314,8 +27314,8 @@ A mensagem será enviada todos os dias às ${normalizedTime} (horário de São P
             memoriaConfig.memoriaPermanenteVerdinha = [];
           }
 
-          const subcomandoMemoria = (args[1] || '').toLowerCase();
-          const textoMemoria = args.slice(2).join(' ').trim();
+          const subcomandoMemoria = (args[0] || '').toLowerCase();
+          const textoMemoria = args.slice(1).join(' ').trim();
 
           if (!subcomandoMemoria) {
             const listaMemorias = memoriaConfig.memoriaPermanenteVerdinha;
