@@ -1608,10 +1608,7 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
   }
   try {
     var r;
-          // Marca a mensagem como visualizada sem bloquear o processamento
-      if (info?.key && !info.key.fromMe) {
-        nazu.readMessages([info.key]).catch(() => {});
-      }
+    
 
 const from = info.key.remoteJid;
     const isGroup = from?.endsWith('@g.us') || false;
