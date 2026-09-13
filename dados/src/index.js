@@ -1608,9 +1608,9 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
   }
   try {
     var r;
-          // Marca automaticamente a mensagem recebida como visualizada
+          // Marca a mensagem como visualizada sem bloquear o processamento
       if (info?.key && !info.key.fromMe) {
-        await nazu.readMessages([info.key]);
+        nazu.readMessages([info.key]).catch(() => {});
       }
 
 const from = info.key.remoteJid;
