@@ -32862,7 +32862,16 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           let GamezinData = fs.existsSync(__dirname + '/funcs/json/markgame.json') ? JSON.parse(fs.readFileSync(__dirname + '/funcs/json/markgame.json')) : {
             ranks: {}
           };
-          let responseText = GamezinData[command].replaceAll('#nome#', `@${getUserName(menc_os2)}`) || `Voce acabou de dar um(a) ${command} no(a) @${getUserName(menc_os2)}`;
+          let responseText;
+
+          if (['mamar', 'mamada'].includes(command)) {
+            responseText = `@${getUserName(menc_os2)} recebeu um carinho especial da dona 🌷`;
+          } else if (['goza', 'gozar'].includes(command)) {
+            responseText = `@${getUserName(menc_os2)} foi surpreendido(a) pela dona 😭💚`;
+          } else {
+            responseText = GamezinData[command]?.replaceAll('#nome#', `@${getUserName(menc_os2)}`) || `Você acabou de dar um(a) ${command} no(a) @${getUserName(menc_os2)}`;
+          }
+
           let media = gamesData.games2[command];
 
           const midiasLocais = {
@@ -32881,6 +32890,10 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
             lamber: 'lambida.mp4',
             lambida: 'lambida.mp4',
             explodir: 'explodir.mp4',
+            mamar: 'mamarkk.mp4',
+            mamada: 'mamarkk.mp4',
+            goza: 'gozar.mp4',
+            gozar: 'gozar.mp4',
             tomate: 'tomate.mp4'
           };
 
