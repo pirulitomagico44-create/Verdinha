@@ -32866,12 +32866,13 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
           let media = gamesData.games2[command];
 
           const midiasLocais = {
-            tapa: 'tapaforte.mp4',
+            tapa: 'taparr.mp4',
+            tapar: 'taparr.mp4',
             soco: 'soco.mp4',
             chutar: 'chuta.mp4',
             socar: 'soco.mp4',
-            beijo: 'beijar.mp4',
-            beijar: 'beijar.mp4',
+            beijo: 'beijarb.mp4',
+            beijar: 'beijarb.mp4',
             abraco: 'abraço.mp4',
             abracar: 'abraço.mp4',
             mata: 'matar.mp4',
