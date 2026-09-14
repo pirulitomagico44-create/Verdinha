@@ -32477,7 +32477,7 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
               mentions: [target]
             });
           } else if (media?.video) {
-            let videoData = media.video;
+            let videoData = media.video?.url || media.video;
 
             if (typeof videoData === 'string' && videoData.endsWith('.mp4')) {
               const caminhoVideoLocal = path.join(__dirname, '..', 'midias', videoData);
