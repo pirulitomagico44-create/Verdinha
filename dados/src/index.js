@@ -32477,8 +32477,18 @@ ${nivelSorte >= 70 ? '🎉 Hoje é seu dia de sorte!' : nivelSorte >= 40 ? '🤔
               mentions: [target]
             });
           } else if (media?.video) {
+            let videoData = media.video;
+
+            if (typeof videoData === 'string' && videoData.endsWith('.mp4')) {
+              const caminhoVideoLocal = path.join(__dirname, '..', 'midias', videoData);
+
+              if (fs.existsSync(caminhoVideoLocal)) {
+                videoData = fs.readFileSync(caminhoVideoLocal);
+              }
+            }
+
             await nazu.sendMessage(from, {
-              video: media.video,
+              video: videoData,
               caption: responseText,
               mentions: [target],
               gifPlayback: true
