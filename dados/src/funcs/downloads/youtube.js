@@ -1,6 +1,6 @@
 import https from 'https'
 import fs from 'fs'
-import verificarAPI from '../API.js'
+import verificarAPI from '../ZoneAPI.js'
 
 const CONFIG_FILE = JSON.parse(
   fs.readFileSync(new URL('../../config.json', import.meta.url), 'utf8')

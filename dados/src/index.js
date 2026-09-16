@@ -538,7 +538,7 @@ const fileExistsAsync = async (filePath) => {
 
 
 
-const modules = await import('./funcs/exports.js');
+const modules = (await import('./funcs/exports.js')).default;
 const {
   youtube,
   tiktok,
