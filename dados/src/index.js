@@ -25322,50 +25322,17 @@ ${prefix}togglecmdvip premium_ia off`);
       }
 
       case 'gpt':
-      case 'chatgpt': {
-        if (!text) return info.reply(`Uso: ${prefix}gpt <mensagem>`);
-
         try {
-          await nazu.sendMessage(from, {
-            react: { text: '⏳', key: info.key }
-          });
+          if (!q) return reply(`Ex: ${groupPrefix}chatgpt oiii`);
 
-          const sessao = info.sender;
+          const { data } = await axios.get(`https://zone.api.br/api/v2/chatgpt?apikey=Verdinha&text=${encodeURIComponent(q)}&session=${sender.split('@')[0]}`);
 
-          const { data } = await axios.get('https://zone.api.br/api/v2/chatgpt', {
-            params: {
-              apikey: 'Verdinha',
-              text,
-              session: sessao
-            },
-            timeout: 30000
-          });
-
-          if (!data?.status) {
-            throw new Error(data?.error || 'Sem resposta');
-          }
-
-          await nazu.sendMessage(from, {
-            text: data.result
-          }, { quoted: info });
-
-          await nazu.sendMessage(from, {
-            react: { text: '✅', key: info.key }
-          });
-
+          await reply(data.result);
         } catch (e) {
-          console.error('Erro no comando GPT:', e?.message || e);
-
-          await nazu.sendMessage(from, {
-            react: { text: '❌', key: info.key }
-          });
-
-          await nazu.sendMessage(from, {
-            text: '❌ Deu erro ao consultar o GPT.'
-          }, { quoted: info });
+          console.error('erru no comando gpt:', e);
+          await reply('gpt erru.');
         }
-      }
-      break;
+        break;
 
       case 'ping':
         try {
