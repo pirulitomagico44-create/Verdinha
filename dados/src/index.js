@@ -11630,6 +11630,9 @@ Entre em contato com o dono do bot:
       case 'rpgremovemoney':
       case 'removerdinheiro': {
 
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode remover saldo!');
+        }
 
         const target = (menc_jid2 && menc_jid2[0]) || null;
         if (!target) return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}rpgremove @user <valor>`);
@@ -11652,6 +11655,9 @@ Entre em contato com o dono do bot:
       case 'setlevel':
       case 'definirnivelrpg': {
 
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode alterar o nível!');
+        }
 
         const target = (menc_jid2 && menc_jid2[0]) || null;
         if (!target) return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}rpgsetlevel @user <nivel>`);
@@ -11680,6 +11686,9 @@ Entre em contato com o dono do bot:
       case 'rpgadditem':
       case 'adicionaritem': {
 
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode adicionar itens!');
+        }
 
         const target = (menc_jid2 && menc_jid2[0]) || null;
         if (!target) return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}rpgadditem @user <item> <quantidade>`);
@@ -11703,6 +11712,9 @@ Entre em contato com o dono do bot:
       case 'rpgremoveitem':
       case 'removeritem': {
 
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode remover itens!');
+        }
 
         const target = (menc_jid2 && menc_jid2[0]) || null;
         if (!target) return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}rpgremoveitem @user <item> <quantidade>`);
