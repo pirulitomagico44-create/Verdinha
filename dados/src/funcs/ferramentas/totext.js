@@ -34,18 +34,30 @@ function setCache(key, val) {
   })
 }
 
-function request(url) {
+// A rota devolve eventos SSE (event: / data:) em vez de um JSON único;
+// ficamos com o último evento "data" recebido, que é o resultado final.
+function requestSSE(url) {
   return new Promise((resolve, reject) => {
     https.get(url, res => {
-      let data = ''
+      let raw = ''
 
       res.on('data', chunk => {
-        data += chunk
+        raw += chunk
       })
 
       res.on('end', () => {
         try {
-          resolve(JSON.parse(data))
+          const dataLines = raw
+            .split('\n')
+            .filter(line => line.startsWith('data:'))
+            .map(line => line.slice(5).trim())
+            .filter(Boolean)
+
+          if (!dataLines.length) {
+            return reject(new Error('Resposta inválida da API'))
+          }
+
+          resolve(JSON.parse(dataLines[dataLines.length - 1]))
         } catch {
           reject(new Error('Resposta inválida da API'))
         }
@@ -84,12 +96,12 @@ async function totext(url) {
       }
     }
 
-    const { apikey_vex, site_vex } = CONFIG_FILE
+    const { apikey_zone, site_zone } = CONFIG_FILE
 
     const api =
-      `${site_vex}/api/ias/transcrever?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`
+      `${site_zone}/api/ia/transcrever-audio?apikey=${apikey_zone}&url=${encodeURIComponent(url)}`
 
-    const data = await request(api)
+    const data = await requestSSE(api)
 
     const checkAfter = await verificarAPI(data)
 
@@ -100,17 +112,19 @@ async function totext(url) {
       }
     }
 
-    if (!data?.status || !data?.texto) {
+    const texto = data?.texto || data?.text || data?.transcricao || data?.result?.text
+
+    if (!data?.status || !texto) {
       return {
         ok: false,
-        msg: 'Não foi possível transcrever o áudio'
+        msg: data?.error || 'Não foi possível transcrever o áudio'
       }
     }
 
     const result = {
-      texto: data.texto,
-      codigo: data.codigo || 200,
-      message: data.message || 'sucesso'
+      texto,
+      codigo: 200,
+      message: 'sucesso'
     }
 
     setCache(`totext:${url}`, result)

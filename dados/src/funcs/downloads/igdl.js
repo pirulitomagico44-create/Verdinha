@@ -39,7 +39,9 @@ function request(url) {
 
       let data = ''
 
-      res.on('data', chunk => data += chunk)
+      res.on('data', chunk => {
+        data += chunk
+      })
 
       res.on('end', () => {
         try {
@@ -73,10 +75,10 @@ async function dl(url) {
     const cached = getCached(`download:${url}`)
     if (cached) return { ok: true, ...cached, cached: true }
 
-    const { apikey_vex, site_vex } = CONFIG_FILE
+    const { apikey_zone, site_zone } = CONFIG_FILE
 
     const api =
-      `${site_vex}/api/downloads/instagram?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`
+      `${site_zone}/api/V2/instagram?apikey=${apikey_zone}&url=${encodeURIComponent(url)}`
 
     const data = await request(api)
 
@@ -86,19 +88,19 @@ async function dl(url) {
       return { ok: false, msg: checkAfter }
     }
 
-    if (!data?.status || !data?.resposta?.medias?.length) {
+    if (!data?.status || !data?.media?.length) {
       return {
         ok: false,
-        msg: 'Postagem não encontrada'
+        msg: data?.error || 'Postagem não encontrada'
       }
     }
 
-    const medias = data.resposta.medias
+    const mediaType = data.type === 'video' ? 'video' : 'image'
 
-    const results = medias.map(m => ({
-      type: m.type,
-      url: m.url,
-      mime: m.type === 'image' ? 'image/jpeg' : 'video/mp4'
+    const results = data.media.map(mediaUrl => ({
+      type: mediaType,
+      url: mediaUrl,
+      mime: mediaType === 'image' ? 'image/jpeg' : 'video/mp4'
     }))
 
     const result = {

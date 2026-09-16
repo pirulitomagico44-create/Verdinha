@@ -46,77 +46,21 @@ function request(url) {
   })
 }
 
-async function search(query) {
-
-  const checkAPI = await verificarAPI()
-  if (checkAPI !== true) {
-    return { ok: false, msg: checkAPI }
-  }
-
-  try {
-    if (!query) {
-      return { ok: false, msg: 'Termo de pesquisa inválido' }
-    }
-
-    const cacheKey = `search:${query}`
-    const cached = getCached(cacheKey)
-    if (cached) return { ok: true, ...cached, cached: true }
-
-    const { apikey_vex, site_vex } = CONFIG_FILE
-    const url = `${site_vex}/api/pesquisa/tiktok?apikey=${apikey_vex}&query=${encodeURIComponent(query)}`
-
-    const data = await request(url)
-
-    const checkAfter = await verificarAPI(data)
-    if (checkAfter !== true) {
-      return { ok: false, msg: checkAfter }
-    }
-
-    if (!data?.status || !data?.results?.length) {
-      return { ok: false, msg: 'Nenhum vídeo encontrado' }
-    }
-
-
-    const video = data.results[Math.floor(Math.random() * data.results.length)]
-
-    if (!video?.url) {
-      return { ok: false, msg: 'Vídeo selecionado sem URL válida' }
-    }
-
-
-    const downloaded = await dl(video.url)
-
-    if (!downloaded.ok) {
-      return downloaded
-    }
-
-    const result = {
-      criador: 'DevTokyo',
-      title: downloaded.title || video.title,
-      duration: video.duration,
-      type: downloaded.type,
-      mime: downloaded.mime,
-      urls: downloaded.urls,
-      author: downloaded.author || video.author,
-      username: downloaded.username || video.username,
-      views: downloaded.views,
-      likes: downloaded.likes,
-      comments: downloaded.comments,
-      shares: downloaded.shares,
-      link: video.url
-    }
-
-    setCache(cacheKey, result)
-
-    return { ok: true, ...result }
-
-  } catch (err) {
-    return { ok: false, msg: err.message }
+function formatResult(data) {
+  return {
+    criador: 'null',
+    title: data.titulo,
+    urls: data.is_video ? [data.download_url] : (data.imagens || []),
+    type: data.is_video ? 'video' : 'image',
+    mime: data.is_video ? 'video/mp4' : 'image/jpeg',
+    audio: data.musica?.url || null,
+    cover: data.autor?.avatar,
+    link: `https://www.tiktok.com/@${data.autor?.username}/video/${data.id}`,
+    views: data.stats?.views
   }
 }
 
 async function dl(url) {
-
   const checkAPI = await verificarAPI()
   if (checkAPI !== true) {
     return { ok: false, msg: checkAPI }
@@ -130,8 +74,8 @@ async function dl(url) {
     const cached = getCached(`download:${url}`)
     if (cached) return { ok: true, ...cached, cached: true }
 
-    const { apikey_vex, site_vex } = CONFIG_FILE
-    const api = `${site_vex}/api/downloads/tiktok?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`
+    const { apikey_zone, site_zone } = CONFIG_FILE
+    const api = `${site_zone}/api/v2/tiktok?apikey=${apikey_zone}&url=${encodeURIComponent(url)}`
 
     const data = await request(api)
 
@@ -140,28 +84,53 @@ async function dl(url) {
       return { ok: false, msg: checkAfter }
     }
 
-    const result = data?.result
-    if (!result) {
-      return { ok: false, msg: 'Não foi possível obter o vídeo' }
+    if (!data?.status) {
+      return { ok: false, msg: data?.error || 'Não foi possível obter o vídeo' }
     }
 
-    const response = {
-      criador: 'DevTokyo',
-      title: result.desc,
-      type: result.type,
-      mime: 'video/mp4',
-      urls: result.video?.playAddr || [],
-      author: result.author?.nickname,
-      username: result.author?.username,
-      views: result.statistics?.playCount,
-      likes: result.statistics?.likeCount,
-      comments: result.statistics?.commentCount,
-      shares: result.statistics?.shareCount
-    }
+    const response = formatResult(data)
 
     setCache(`download:${url}`, response)
 
     return { ok: true, ...response }
+
+  } catch (err) {
+    return { ok: false, msg: err.message }
+  }
+}
+
+async function search(query) {
+  const checkAPI = await verificarAPI()
+  if (checkAPI !== true) {
+    return { ok: false, msg: checkAPI }
+  }
+
+  try {
+    if (!query) {
+      return { ok: false, msg: 'Termo de pesquisa inválido' }
+    }
+
+    const cached = getCached(`search:${query}`)
+    if (cached) return { ok: true, ...cached, cached: true }
+
+    const { site_zone } = CONFIG_FILE
+    const url = `${site_zone}/api/tiktok/search?q=${encodeURIComponent(query)}&count=1`
+
+    const data = await request(url)
+
+    if (!data?.status || !data?.results?.length) {
+      return { ok: false, msg: 'Nenhum vídeo encontrado' }
+    }
+
+    const video = data.results[0]
+    const tiktokUrl = `https://www.tiktok.com/@${video.author}/video/${video.id}`
+
+    const dlResult = await dl(tiktokUrl)
+    if (!dlResult.ok) return dlResult
+
+    setCache(`search:${query}`, dlResult)
+
+    return dlResult
 
   } catch (err) {
     return { ok: false, msg: err.message }

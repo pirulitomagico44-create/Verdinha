@@ -27,8 +27,50 @@ function setCache(key, val) {
     cache.set(key, { val, ts: Date.now() });
 }
 
+function request(url) {
+    return new Promise((resolve, reject) => {
+        https.get(url, res => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                } catch {
+                    reject(new Error('Resposta inválida da API'));
+                }
+            });
+        }).on('error', reject);
+    });
+}
+
+function postJSON(url, body) {
+    return new Promise((resolve, reject) => {
+        const payload = JSON.stringify(body);
+        const req = https.request(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(payload)
+            }
+        }, res => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                } catch {
+                    reject(new Error('Resposta inválida da API'));
+                }
+            });
+        });
+        req.on('error', reject);
+        req.write(payload);
+        req.end();
+    });
+}
+
 /**
- * Gera imagem estática Brat (Retorna a URL direta)
+ * Gera figurinha Brat (Retorna a URL da imagem)
  */
 async function gerarbrat(query, bg, text_color, blur) {
     const checkAPI = await verificarAPI();
@@ -37,24 +79,29 @@ async function gerarbrat(query, bg, text_color, blur) {
     try {
         if (!query) return { ok: false, msg: 'O texto (query) é obrigatório' };
 
-        const cacheKey = `brat:${query.toLowerCase()}:${bg}:${text_color}:${blur}`;
+        const cacheKey = `brat:${query.toLowerCase()}`;
         const cached = getCached(cacheKey);
         if (cached) return { ok: true, ...cached, cached: true };
 
-        const { apikey_vex, site_vex } = CONFIG_FILE;
+        const { site_zone } = CONFIG_FILE;
 
-        // Monta a URL que retorna a imagem diretamente
-        let url = `${site_vex}/api/canvas/brat?apikey=${apikey_vex}&query=${encodeURIComponent(query)}`;
-        if (bg) url += `&bg=${encodeURIComponent(bg)}`;
-        if (text_color) url += `&text_color=${encodeURIComponent(text_color)}`;
-        if (blur) url += `&blur=${encodeURIComponent(blur)}`;
+        const url = `${site_zone}/api/brat?text=${encodeURIComponent(query)}`;
+
+        const data = await request(url);
+
+        const checkAfter = await verificarAPI(data);
+        if (checkAfter !== true) return { ok: false, msg: checkAfter };
+
+        if (!data?.status || !data?.imagem) {
+            return { ok: false, msg: data?.error || 'Erro ao gerar o sticker Brat' };
+        }
 
         const result = {
             criador: 'Tokyo',
             type: 'image',
             mime: 'image/webp',
             query,
-            url: url // A URL é o próprio endpoint, pois ele já entrega a imagem
+            url: data.imagem
         };
 
         setCache(cacheKey, result);
@@ -73,25 +120,29 @@ async function gerarbratvid(query, bg, text_color, bpm, blur) {
     try {
         if (!query) return { ok: false, msg: 'O texto (query) é obrigatório' };
 
-        const cacheKey = `bratvid:${query.toLowerCase()}:${bg}:${text_color}:${bpm}:${blur}`;
+        const cacheKey = `bratvid:${query.toLowerCase()}`;
         const cached = getCached(cacheKey);
         if (cached) return { ok: true, ...cached, cached: true };
 
-        const { apikey_vex, site_vex } = CONFIG_FILE;
+        const { site_zone } = CONFIG_FILE;
 
+        const url = `${site_zone}/api/brat?text=${encodeURIComponent(query)}&animado=true`;
 
-        let url = `${site_vex}/api/canvas/bratvideo?apikey=${apikey_vex}&query=${encodeURIComponent(query)}`;
-        if (bg) url += `&bg=${encodeURIComponent(bg)}`;
-        if (text_color) url += `&text_color=${encodeURIComponent(text_color)}`;
-        if (bpm) url += `&bpm=${encodeURIComponent(bpm)}`;
-        if (blur) url += `&blur=${encodeURIComponent(blur)}`;
+        const data = await request(url);
+
+        const checkAfter = await verificarAPI(data);
+        if (checkAfter !== true) return { ok: false, msg: checkAfter };
+
+        if (!data?.status || !data?.imagem) {
+            return { ok: false, msg: data?.error || 'Erro ao gerar o sticker Brat animado' };
+        }
 
         const result = {
             criador: 'Tokyo',
             type: 'video',
             mime: 'image/webp',
             query,
-            url: url
+            url: data.imagem
         };
 
         setCache(cacheKey, result);
@@ -113,26 +164,39 @@ async function gerarwelcomecard(avatar, nome, texto, fundo, corMoldura, corLinha
             return { ok: false, msg: 'Avatar e Nome são obrigatórios para o Welcome Card' };
         }
 
-        const { apikey_vex, site_vex } = CONFIG_FILE;
+        const { site_zone } = CONFIG_FILE;
 
+        const body = { nome, image: avatar };
 
-        let url = `${site_vex}/api/canvas/welcome2?apikey=${apikey_vex}` +
-            `&avatar=${encodeURIComponent(avatar)}` +
-            `&nome=${encodeURIComponent(nome)}` +
-            `&texto=${encodeURIComponent(texto || '')}` +
-            `&fundo=${encodeURIComponent(fundo || '')}` +
-            `&corMoldura=${encodeURIComponent(corMoldura || '')}` +
-            `&corLinhas=${encodeURIComponent(corLinhas || '')}` +
-            `&glow=${glow || 'false'}`;
+        if (texto) body.titulo = texto;
+        if (fundo) {
+            if (/^https?:\/\//i.test(fundo)) body.background = fundo;
+            else body.bg = fundo;
+        }
+        if (corMoldura) body.ringColor = corMoldura;
+        if (corLinhas) body.barColor = corLinhas;
+        if (glow !== undefined && glow !== null && glow !== '') {
+            body.glow = (glow === true || glow === 'true') ? 1 : 0;
+        }
+
+        const data = await postJSON(`${site_zone}/canvas/bemvindo`, body);
+
+        const checkAfter = await verificarAPI(data);
+        if (checkAfter !== true) {
+            return { ok: false, msg: checkAfter };
+        }
+
+        if (!data?.status || !data?.imagem) {
+            return { ok: false, msg: data?.error || 'Não foi possível gerar o Welcome Card' };
+        }
 
         const result = {
             criador: 'Tokyo',
             type: 'image',
             mime: 'image/png',
             nome,
-            url: url
+            url: data.imagem
         };
-
 
         return { ok: true, ...result };
 

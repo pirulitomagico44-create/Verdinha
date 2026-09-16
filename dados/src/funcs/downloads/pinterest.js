@@ -57,9 +57,9 @@ async function search(query) {
     const cached = getCached(`search:${query.toLowerCase()}`);
     if (cached) return { ok: true, ...cached, cached: true };
 
-    const { apikey_vex, site_vex } = CONFIG_FILE;
+    const { site_zone } = CONFIG_FILE;
 
-    const url = `${site_vex}/api/pesquisa/pinterest?apikey=${apikey_vex}&query=${encodeURIComponent(query)}`;
+    const url = `${site_zone}/api/v3/pinterest?q=${encodeURIComponent(query)}&type=image`;
 
     const data = await request(url);
 
@@ -67,10 +67,10 @@ async function search(query) {
     if (checkAfter !== true) return { ok: false, msg: checkAfter };
 
     if (!data?.status || !data?.results?.length) {
-      return { ok: false, msg: 'Nenhuma imagem encontrada' };
+      return { ok: false, msg: data?.error || 'Nenhuma imagem encontrada' };
     }
 
-    const urls = data.results.map(r => r.directLink).filter(Boolean);
+    const urls = data.results.map(r => r.media_url).filter(Boolean);
 
     const result = {
       criador: 'Hiudy',
@@ -104,25 +104,25 @@ async function dl(url) {
     const cached = getCached(`download:${url}`);
     if (cached) return { ok: true, ...cached, cached: true };
 
-    const { apikey_vex, site_vex } = CONFIG_FILE;
+    const { site_zone } = CONFIG_FILE;
 
-    const api = `${site_vex}/api/pesquisas/pinterest?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`;
+    const api = `${site_zone}/api/v3/pinterest?q=${encodeURIComponent(url)}`;
 
     const data = await request(api);
 
     const checkAfter = await verificarAPI(data);
     if (checkAfter !== true) return { ok: false, msg: checkAfter };
 
-    if (!data?.status || !data?.results?.length) {
-      return { ok: false, msg: 'Não foi possível obter o conteúdo' };
+    if (!data?.status || !data?.media?.length) {
+      return { ok: false, msg: data?.error || 'Não foi possível obter o conteúdo' };
     }
 
-    const urls = data.results.map(r => r.directLink).filter(Boolean);
+    const urls = data.media.filter(Boolean);
 
     const result = {
       criador: 'Tokyo',
-      type: 'image',
-      mime: 'image/jpeg',
+      type: data.isVideo ? 'video' : 'image',
+      mime: data.isVideo ? 'video/mp4' : 'image/jpeg',
       urls
     };
 

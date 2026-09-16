@@ -34,6 +34,32 @@ function setCache(key, val) {
   });
 }
 
+function postJSON(url, body) {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify(body);
+    const req = https.request(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, res => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch {
+          reject(new Error('Resposta inválida da API'));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
 
 
 async function removeBg(url) {
@@ -66,33 +92,20 @@ async function removeBg(url) {
       };
     }
 
-    const { apikey_vex, site_vex } = CONFIG_FILE;
+    const { site_zone } = CONFIG_FILE;
 
-    const download =
-      `${site_vex}/api/ferramentas/removebg?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`;
+    const data = await postJSON(`${site_zone}/api/removebg`, { url });
 
-    console.log('[RemoveBG] URL:', download);
+    const checkAfter = await verificarAPI(data);
+    if (checkAfter !== true) {
+      return { ok: false, msg: checkAfter };
+    }
 
-    const response = await fetch(download);
-
-    console.log('[RemoveBG] Status:', response.status);
-    console.log('[RemoveBG] Headers:', Object.fromEntries(response.headers.entries()));
-
-    const buffer = await response.arrayBuffer();
-
-    console.log('[RemoveBG] Tamanho:', buffer.byteLength);
-
-    if (!buffer || buffer.byteLength < 1000) {
-
-      const text = Buffer.from(buffer).toString();
-
-      console.log('[RemoveBG] Resposta:', text);
-
+    if (!data?.status || !data?.imagem) {
       return {
         ok: false,
-        msg: 'A API não retornou uma imagem válida.'
+        msg: data?.error || 'A API não retornou uma imagem válida.'
       };
-
     }
 
     const result = {
@@ -100,7 +113,7 @@ async function removeBg(url) {
       criador: 'Tokyo',
       type: 'image',
       mime: 'image/png',
-      download
+      download: data.imagem
     };
 
     setCache(`removebg:${url}`, result);
@@ -131,7 +144,10 @@ async function upscale(url, scale = 2) {
   const checkAPI = await verificarAPI();
 
   if (checkAPI !== true) {
-    throw new Error(checkAPI);
+    return {
+      ok: false,
+      msg: checkAPI
+    };
   }
 
   try {
@@ -153,10 +169,21 @@ async function upscale(url, scale = 2) {
       };
     }
 
-    const { apikey_vex, site_vex } = CONFIG_FILE;
+    const { apikey_zone, site_zone } = CONFIG_FILE;
 
-    const download =
-      `${site_vex}/api/ferramentas/upscale?apikey=${apikey_vex}&query=${encodeURIComponent(url)}&scale=${scale}`;
+    const data = await postJSON(`${site_zone}/api/upscaler?apikey=${apikey_zone}`, { url, scale });
+
+    const checkAfter = await verificarAPI(data);
+    if (checkAfter !== true) {
+      return { ok: false, msg: checkAfter };
+    }
+
+    if (!data?.status || !data?.url) {
+      return {
+        ok: false,
+        msg: data?.error || 'Erro ao melhorar imagem'
+      };
+    }
 
     const result = {
       status: true,
@@ -164,7 +191,7 @@ async function upscale(url, scale = 2) {
       type: 'image',
       mime: 'image/png',
       scale,
-      download
+      download: data.url
     };
 
     setCache(`upscale:${url}:${scale}`, result);
@@ -176,9 +203,10 @@ async function upscale(url, scale = 2) {
 
   } catch (error) {
 
-    throw new Error(
-      error.message || 'Erro ao melhorar imagem'
-    );
+    return {
+      ok: false,
+      msg: error.message || 'Erro ao melhorar imagem'
+    };
 
   }
 
