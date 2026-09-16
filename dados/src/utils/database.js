@@ -1471,12 +1471,17 @@ function calculateNextLevelXp(level) {
   return Math.floor(100 * Math.pow(1.1, level - 1));
 }
 
-function getPatent(level, patents) {
+function getPatent(level, patents = []) {
+  if (!Array.isArray(patents) || patents.length === 0) {
+    return "Iniciante";
+  }
+
   for (let i = patents.length - 1; i >= 0; i--) {
     if (level >= patents[i].minLevel) {
       return patents[i].name;
     }
   }
+
   return "Iniciante";
 }
 
