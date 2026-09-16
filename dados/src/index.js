@@ -11655,8 +11655,8 @@ Entre em contato com o dono do bot:
       case 'setlevel':
       case 'definirnivelrpg': {
 
-        if (sender !== botNumber) {
-          return reply('❌ Apenas a Verdinha pode alterar o nível!');
+        if (!isOwner) {
+          return reply('❌ Apenas a dona da Verdinha pode alterar o nível!');
         }
 
         const target = (menc_jid2 && menc_jid2[0]) || null;
