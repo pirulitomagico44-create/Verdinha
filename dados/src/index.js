@@ -25321,6 +25321,52 @@ ${prefix}togglecmdvip premium_ia off`);
         break;
       }
 
+      case 'gpt':
+      case 'chatgpt': {
+        if (!text) return info.reply(`Uso: ${prefix}gpt <mensagem>`);
+
+        try {
+          await nazu.sendMessage(from, {
+            react: { text: '⏳', key: info.key }
+          });
+
+          const sessao = info.sender;
+
+          const { data } = await axios.get('https://zone.api.br/api/v2/chatgpt', {
+            params: {
+              apikey: 'Verdinha',
+              text,
+              session: sessao
+            },
+            timeout: 30000
+          });
+
+          if (!data?.status) {
+            throw new Error(data?.error || 'Sem resposta');
+          }
+
+          await nazu.sendMessage(from, {
+            text: data.result
+          }, { quoted: info });
+
+          await nazu.sendMessage(from, {
+            react: { text: '✅', key: info.key }
+          });
+
+        } catch (e) {
+          console.error('Erro no comando GPT:', e?.message || e);
+
+          await nazu.sendMessage(from, {
+            react: { text: '❌', key: info.key }
+          });
+
+          await nazu.sendMessage(from, {
+            text: '❌ Deu erro ao consultar o GPT.'
+          }, { quoted: info });
+        }
+      }
+      break;
+
       case 'ping':
         try {
           const timestamp = Date.now();
