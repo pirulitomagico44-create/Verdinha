@@ -11606,6 +11606,9 @@ Entre em contato com o dono do bot:
       case 'rpgaddmoney':
       case 'adicionardinheiro': {
 
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode adicionar saldo!');
+        }
 
         const target = (menc_jid2 && menc_jid2[0]) || null;
         if (!target) return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}rpgadd @user <valor>`);
