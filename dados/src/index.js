@@ -2216,6 +2216,20 @@ ${body}`;
     const groupPrefix = groupData.customPrefix || prefixo;
     var isCmd = body.trim().startsWith(groupPrefix);
 
+    // Reage automaticamente às mensagens que começam com o prefixo
+    if (isCmd && !info.key.fromMe) {
+      try {
+        await sock.sendMessage(from, {
+          react: {
+            text: '💚',
+            key: info.key
+          }
+        });
+      } catch (err) {
+        console.log('[REAÇÃO] Não foi possível reagir:', err.message);
+      }
+    }
+
     // Suporte para "! comando" (com espaço após o prefixo)
     const bodyWithoutPrefix = body.trim().slice(groupPrefix.length).trimStart();
 
