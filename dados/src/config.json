@@ -17,5 +17,7 @@
       1034740716
     ]
   },
-  "globalMode": true
+  "globalMode": true,
+  "site_zone": "https://zone.api.br",
+  "apikey_zone": "Verdinha"
 }

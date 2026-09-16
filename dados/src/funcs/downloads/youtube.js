@@ -39,44 +39,53 @@ function downloadFile(url) {
   })
 }
 
+function parseDurationToSeconds(duration) {
+  if (typeof duration !== 'string') return 0
+  const parts = duration.split(':').map(n => parseInt(n, 10) || 0)
+  return parts.reduce((acc, part) => acc * 60 + part, 0)
+}
+
+// A rota não devolve o canal/artista separado do título, então tentamos
+// extrair do formato comum "Artista - Título"; sem isso, cai no genérico.
+function guessAuthorName(title) {
+  if (typeof title === 'string' && title.includes(' - ')) {
+    return title.split(' - ')[0].trim()
+  }
+  return 'YouTube'
+}
+
 async function search(query) {
   const checkAPI = await verificarAPI()
   if (checkAPI !== true) return { ok: false, msg: checkAPI }
 
   try {
-    const { apikey_vex, site_vex } = CONFIG_FILE
-    const url = `${site_vex}/api/pesquisa/youtube?apikey=${apikey_vex}&query=${encodeURIComponent(query)}`
+    const { site_zone, apikey_zone } = CONFIG_FILE
+    const url = `/v2/player?text=${encodeURIComponent(query)}&apikey=${encodeURIComponent(apikey_zone)}`
 
     const data = await request(url)
-
 
     const checkAfter = await verificarAPI(data)
     if (checkAfter !== true) return { ok: false, msg: checkAfter }
 
     if (!data?.status) {
-      throw new Error('Erro ao buscar vídeo')
+      return { ok: false, msg: data?.msg || 'Erro ao buscar vídeo' }
     }
 
-    const results = data.results
-    if (!results || results.length === 0) {
-      return { ok: false, msg: 'Nenhum vídeo encontrado' }
-    }
-
-    const video = results[0]
+    const seconds = parseDurationToSeconds(data.duration)
 
     return {
       ok: true,
       data: {
-        videoId: video.videoId,
-        url: video.url,
-        title: video.title,
-        description: video.description,
-        thumbnail: video.thumbnail,
-        seconds: video.seconds,
-        timestamp: video.timestamp,
-        views: video.views,
-        ago: video.ago,
-        author: video.author?.name
+        url: data.youtube_url,
+        title: data.title,
+        description: '',
+        thumbnail: data.thumbnail,
+        seconds,
+        timestamp: data.duration,
+        views: 0,
+        ago: '',
+        author: { name: guessAuthorName(data.title) },
+        downloadUrl: data.download_url
       }
     }
 
@@ -90,29 +99,26 @@ async function mp3(url) {
   if (checkAPI !== true) return { ok: false, msg: checkAPI }
 
   try {
-    const { apikey_vex, site_vex } = CONFIG_FILE
-    const api = `${site_vex}/api/downloads/youtubemp3?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`
-    
-    const data = await request(api)
+    const { site_zone, apikey_zone } = CONFIG_FILE
+    const api = `/v2/player?text=${encodeURIComponent(url)}&apikey=${encodeURIComponent(apikey_zone)}`
 
+    const data = await request(api)
 
     const checkAfter = await verificarAPI(data)
     if (checkAfter !== true) return { ok: false, msg: checkAfter }
 
-    const resposta = data?.resposta
-
-    if (!resposta?.dlurl) {
-      throw new Error('URL de download não encontrada')
+    if (!data?.status || !data?.download_url) {
+      return { ok: false, msg: data?.msg || 'URL de download não encontrada' }
     }
 
-    const buffer = await downloadFile(resposta.dlurl)
+    const buffer = await downloadFile(data.download_url)
 
     return {
       ok: true,
       buffer,
-      title: resposta.title || 'YouTube Audio',
-      thumbnail: resposta.thumbnail || '',
-      filename: `${(resposta.title || 'audio').replace(/[^\w\s]/gi, '')}.mp3`
+      title: data.title || 'YouTube Audio',
+      thumbnail: data.thumbnail || '',
+      filename: `${(data.title || 'audio').replace(/[^\w\s]/gi, '')}.mp3`
     }
 
   } catch (err) {
@@ -125,22 +131,21 @@ async function mp4(url) {
   if (checkAPI !== true) return { ok: false, msg: checkAPI }
 
   try {
-    const { apikey_vex, site_vex } = CONFIG_FILE
-    const api = `${site_vex}/api/downloads/youtubemp4?apikey=${apikey_vex}&query=${encodeURIComponent(url)}`
-    
-    const data = await request(api)
+    const { site_zone, apikey_zone } = CONFIG_FILE
+    const api = `/api/ytmp4?text=${encodeURIComponent(url)}&quality=720p&apikey=${encodeURIComponent(apikey_zone)}`
 
+    const data = await request(api)
 
     const checkAfter = await verificarAPI(data)
     if (checkAfter !== true) return { ok: false, msg: checkAfter }
 
-    const resposta = data?.resposta
+    const resposta = data?.result
 
-    if (!resposta?.dlurl) {
-      throw new Error('URL de download não encontrada')
+    if (!data?.status || !resposta?.download) {
+      return { ok: false, msg: data?.error || 'URL de download não encontrada' }
     }
 
-    const buffer = await downloadFile(resposta.dlurl)
+    const buffer = await downloadFile(resposta.download)
 
     return {
       ok: true,
