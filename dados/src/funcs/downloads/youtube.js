@@ -60,7 +60,7 @@ async function search(query) {
 
   try {
     const { site_zone, apikey_zone } = CONFIG_FILE
-    const url = `/v2/player?text=${encodeURIComponent(query)}&apikey=${encodeURIComponent(apikey_zone)}`
+    const url = `${site_zone}/v2/player?text=${encodeURIComponent(query)}&apikey=${encodeURIComponent(apikey_zone)}`
 
     const data = await request(url)
 
@@ -100,7 +100,7 @@ async function mp3(url) {
 
   try {
     const { site_zone, apikey_zone } = CONFIG_FILE
-    const api = `/v2/player?text=${encodeURIComponent(url)}&apikey=${encodeURIComponent(apikey_zone)}`
+    const api = `${site_zone}/v2/player?text=${encodeURIComponent(url)}&apikey=${encodeURIComponent(apikey_zone)}`
 
     const data = await request(api)
 
@@ -132,7 +132,7 @@ async function mp4(url) {
 
   try {
     const { site_zone, apikey_zone } = CONFIG_FILE
-    const api = `/api/ytmp4?text=${encodeURIComponent(url)}&quality=720p&apikey=${encodeURIComponent(apikey_zone)}`
+    const api = `${site_zone}/api/ytmp4?text=${encodeURIComponent(url)}&quality=720p&apikey=${encodeURIComponent(apikey_zone)}`
 
     const data = await request(api)
 
