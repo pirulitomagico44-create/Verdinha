@@ -13,8 +13,6 @@ export default async function menu(prefix, botName = "MeuBot", userName = "Usuá
 ${menuTopBorder}${separatorIcon} *CENTRAL DA VERDINHA*
 ${middleBorder}
 ${middleBorder}${menuItemIcon}${prefix}menudown
-${middleBorder}${menuItemIcon}${prefix}menulogos
-${middleBorder}${menuItemIcon}${prefix}menuedits
 ${middleBorder}${menuItemIcon}${prefix}menuadm
 ${middleBorder}${menuItemIcon}${prefix}menubn
 ${middleBorder}${menuItemIcon}${prefix}menudono
