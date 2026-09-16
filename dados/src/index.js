@@ -2219,7 +2219,7 @@ ${body}`;
     // Reage automaticamente às mensagens que começam com o prefixo
     if (isCmd && !info.key.fromMe) {
       try {
-        await sock.sendMessage(from, {
+        await nazu.sendMessage(from, {
           react: {
             text: '💚',
             key: info.key
