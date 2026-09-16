@@ -8337,7 +8337,7 @@ Entre em contato com o dono do bot:
         text += `╰━━━━━━━━━━━━━━━━━━━━╯\n\n`;
 
         for (const ach of achievements) {
-          const unlocked = ach.req;
+          const unlocked = ach.req || !!me.achievements[ach.id];
           if (unlocked && !me.achievements[ach.id]) {
             me.achievements[ach.id] = Date.now();
           }
@@ -11662,6 +11662,91 @@ Entre em contato com o dono do bot:
         saveEconomy(econ);
 
         return reply(`╭━━━⊱ ✅ *DINHEIRO REMOVIDO* ⊱━━━╮\n│\n│ 👤 @${target.split('@')[0]}\n│ 💸 -${amount.toLocaleString()} moedas\n│ 💼 Carteira atual: ${targetData.wallet.toLocaleString()}\n│\n╰━━━━━━━━━━━━━━━━━━━━━━━━━╯`, { mentions: [target] });
+      }
+
+      // Adicionar conquista a jogador
+      case 'addconquista':
+      case 'rpgaddconquista': {
+
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode adicionar conquistas!');
+        }
+
+        const target = (menc_jid2 && menc_jid2[0]) || null;
+        if (!target) {
+          return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}addconquista @user <conquista>`);
+        }
+
+        const conquista = args
+          .filter(a => !a.startsWith('@'))
+          .join('_')
+          .toLowerCase()
+          .trim();
+
+        const conquistasValidas = [
+          'minerador',
+          'trabalhador',
+          'pescador',
+          'cacador',
+          'explorador',
+          'gladiador',
+          'milionario',
+          'veterano',
+          'colecionador',
+          'criminoso'
+        ];
+
+        if (!conquista || !conquistasValidas.includes(conquista)) {
+          return reply(`❌ Conquista inválida!\n\n🏆 Conquistas disponíveis:\n${conquistasValidas.map(c => `• ${c}`).join('\n')}`);
+        }
+
+        const econ = loadEconomy();
+        const targetData = getEcoUser(econ, target);
+
+        targetData.achievements = targetData.achievements || {};
+
+        if (targetData.achievements[conquista]) {
+          return reply(`⚠️ @${target.split('@')[0]} já possui essa conquista!`, { mentions: [target] });
+        }
+
+        targetData.achievements[conquista] = Date.now();
+        saveEconomy(econ);
+
+        return reply(`╭━━━⊱ 🏆 *CONQUISTA ADICIONADA* ⊱━━━╮\n│\n│ 👤 @${target.split('@')[0]}\n│ 🎖️ Conquista: *${conquista}*\n│\n╰━━━━━━━━━━━━━━━━━━━━━━━━━╯`, { mentions: [target] });
+      }
+
+      // Remover conquista de jogador
+      case 'removeconquista':
+      case 'rpgremoveconquista': {
+
+        if (sender !== botNumber) {
+          return reply('❌ Apenas a Verdinha pode remover conquistas!');
+        }
+
+        const target = (menc_jid2 && menc_jid2[0]) || null;
+        if (!target) {
+          return reply(`❌ Marque um usuário!\n\n💡 Uso: ${prefix}removeconquista @user <conquista>`);
+        }
+
+        const conquista = args
+          .filter(a => !a.startsWith('@'))
+          .join('_')
+          .toLowerCase()
+          .trim();
+
+        const econ = loadEconomy();
+        const targetData = getEcoUser(econ, target);
+
+        targetData.achievements = targetData.achievements || {};
+
+        if (!targetData.achievements[conquista]) {
+          return reply(`⚠️ @${target.split('@')[0]} não possui essa conquista!`, { mentions: [target] });
+        }
+
+        delete targetData.achievements[conquista];
+        saveEconomy(econ);
+
+        return reply(`╭━━━⊱ 🗑️ *CONQUISTA REMOVIDA* ⊱━━━╮\n│\n│ 👤 @${target.split('@')[0]}\n│ 🎖️ Conquista: *${conquista}*\n│\n╰━━━━━━━━━━━━━━━━━━━━━━━━━╯`, { mentions: [target] });
       }
 
       // Definir level de jogador
