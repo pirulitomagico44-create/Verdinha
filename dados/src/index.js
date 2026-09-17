@@ -1111,7 +1111,6 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
   const nomedono = config.nomedono;
   const nomebot = config.nomebot;
   const prefixo = config.prefixo;
-  const site_vex = config.site_vex
   const debug = config.debug;
   const lidowner = config.lidowner;
 
@@ -21011,7 +21010,7 @@ ${lerMaisPrefix}
 https://vexhost.com.br
 ${lerMaisPrefix}
 🔑 *API oficial da nazuna bot*
-https://vexapi.com.br
+https://zone.api.br
 ${lerMaisPrefix}
 📞 *Dev Tokyo:*
 wa.me/553285076326
@@ -22819,22 +22818,23 @@ Precisa de ajuda? Entre em contato:
           if (!isOwner) return reply("Este comando é exclusivo para o meu dono!");
 
           if (!q) {
-            return reply(`Por favor, digite a nova apikey
+            return reply(`Por favor, digite a nova apikey da Zone API.
 
 Exemplo:
-${prefix}${command} 1a0b5879-bc22-4f4a
+${prefix}${command} Verdinha
 
-⚠️ Você pega sua api-key no site ${site_vex}
-💸 Não esqueça de contratar um plano para ela funcionar!`);
+🌐 API oficial: https://zone.api.br`);
           }
 
           let config = JSON.parse(fs.readFileSync(CONFIG_FILE));
 
-          config.apikey_vex = q;
+          config.apikey_zone = q;
+          delete config.apikey_vex;
+          delete config.site_vex;
 
           writeJsonFile(CONFIG_FILE, config);
 
-          await reply(`✅ Apikey alterada com sucesso para "${q}"!
+          await reply(`✅ Apikey da Zone alterada com sucesso!
 
 🔄 Reiniciando o bot para aplicar as alterações...`);
 
