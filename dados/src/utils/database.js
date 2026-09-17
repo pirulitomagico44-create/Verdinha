@@ -1689,7 +1689,20 @@ function migrateAndValidateEcoUser(user) {
   // === RPG - STATS BASE ===
   user.level = validateNumber(user.level, 1, 1);
   user.exp = validateNumber(user.exp, 0);
-  user.prestige = validateNumber(user.prestige, 0);
+  // Prestige: mantém a estrutura completa do sistema
+  if (!user.prestige || typeof user.prestige !== 'object' || Array.isArray(user.prestige)) {
+    user.prestige = {
+      level: 0,
+      totalResets: 0,
+      bonusMultiplier: 1
+    };
+  } else {
+    user.prestige.level = validateNumber(user.prestige.level, 0);
+    user.prestige.totalResets = validateNumber(user.prestige.totalResets, 0);
+    user.prestige.bonusMultiplier = typeof user.prestige.bonusMultiplier === 'number'
+      ? user.prestige.bonusMultiplier
+      : 1;
+  }
   user.classe = user.classe || null;
   user.clan = user.clan || null;
   user.house = user.house || null;
