@@ -12811,148 +12811,91 @@ Entre em contato com o dono do bot:
         return reply(text);
       }
 
-      // Sistema de Evolução/Prestige (DIFICULDADE AUMENTADA)
+      // Sistema de Evolução/Prestige
       case 'evoluir':
       case 'evolucao':
       case 'prestige': {
-        if (!isGroup) return reply('⚔️ Este comando funciona apenas em grupos com Modo RPG ativo.');
-        if (!groupData.modorpg) return reply(`⚔️ Modo RPG desativado! Use ${prefix}modorpg para ativar.`);
+        if (!isGroup) {
+          return reply('⚔️ Este comando funciona apenas em grupos com Modo RPG ativo.');
+        }
+
+        if (!groupData.modorpg) {
+          return reply(`⚔️ Modo RPG desativado! Use ${prefix}modorpg para ativar.`);
+        }
 
         const econ = loadEconomy();
         const me = getEcoUser(econ, sender);
 
-        if (!me.prestige) me.prestige = { level: 0, totalResets: 0, bonusMultiplier: 1 };
-
-        // Requisitos balanceados e alcançáveis
-        const requiredLevel = 50 + (me.prestige.level * 15); // Level 50, 65, 80...
-        const requiredCoins = 100000 + (me.prestige.level * 50000); // 100k, 150k, 200k... (linear)
-        const requiredAchievements = 3 + (me.prestige.level * 2); // 3, 5, 7... conquistas
-        const requiredTotalWealth = 150000 + (me.prestige.level * 100000); // 150k, 250k, 350k...
-        const requiredBattlesWon = 20 + (me.prestige.level * 15); // 20, 35, 50... batalhas
-        const requiredWorkTimes = 50 + (me.prestige.level * 30); // 50, 80, 110... trabalhos
-
-        const currentAchievements = Object.keys(me.achievements || {}).length;
-        const currentBattlesWon = me.battlesWon || 0;
-        const currentWorkTimes = me.stats?.workCount || 0;
-        const currentTotalWealth = (me.wallet || 0) + (me.bank || 0);
-
-        if (!q) {
-          let text = `╭━━━⊱ 🌟 *EVOLUÇÃO (PRESTIGE)* ⊱━━━╮\n`;
-          text += `│ ${pushname}\n`;
-          text += `╰━━━━━━━━━━━━━━━━━━━━╯\n\n`;
-          text += `🔱 Prestige Atual: ${me.prestige.level}\n`;
-          text += `🔄 Resets Totais: ${me.prestige.totalResets}\n`;
-          text += `✨ Multiplicador: ${me.prestige.bonusMultiplier.toFixed(2)}x\n\n`;
-          text += `📊 *REQUISITOS PARA PRESTIGE ${me.prestige.level + 1}:*\n`;
-          text += `┌─────────────────────────\n`;
-          text += `│ 📈 Level: ${me.level || 1}/${requiredLevel} ${(me.level || 1) >= requiredLevel ? '✅' : '❌'}\n`;
-          text += `│ 💰 Carteira: ${(me.wallet || 0).toLocaleString()}/${requiredCoins.toLocaleString()} ${(me.wallet || 0) >= requiredCoins ? '✅' : '❌'}\n`;
-          text += `│ 💎 Riqueza Total: ${currentTotalWealth.toLocaleString()}/${requiredTotalWealth.toLocaleString()} ${currentTotalWealth >= requiredTotalWealth ? '✅' : '❌'}\n`;
-          text += `│ 🏆 Conquistas: ${currentAchievements}/${requiredAchievements} ${currentAchievements >= requiredAchievements ? '✅' : '❌'}\n`;
-          text += `│ ⚔️ Batalhas: ${currentBattlesWon}/${requiredBattlesWon} ${currentBattlesWon >= requiredBattlesWon ? '✅' : '❌'}\n`;
-          text += `│ 💼 Trabalhos: ${currentWorkTimes}/${requiredWorkTimes} ${currentWorkTimes >= requiredWorkTimes ? '✅' : '❌'}\n`;
-          text += `└─────────────────────────\n\n`;
-
-          text += `🎁 *RECOMPENSAS DO PRESTIGE:*\n`;
-          text += `• Multiplicador +${((me.prestige.level + 1) * 0.15).toFixed(2)}x\n`;
-          text += `• Bônus exclusivo de prestige\n`;
-          text += `• Título especial no perfil\n\n`;
-
-          const allReqsMet = (me.level || 1) >= requiredLevel &&
-            (me.wallet || 0) >= requiredCoins &&
-            currentTotalWealth >= requiredTotalWealth &&
-            currentAchievements >= requiredAchievements &&
-            currentBattlesWon >= requiredBattlesWon &&
-            currentWorkTimes >= requiredWorkTimes;
-
-          if (allReqsMet) {
-            text += `✅ *TODOS OS REQUISITOS COMPLETOS!*\n\n`;
-            text += `⚠️ *ATENÇÃO - SERÁ PERDIDO:*\n`;
-            text += `• Level volta para 1\n`;
-            text += `• Moedas da carteira resetadas\n`;
-            text += `• Banco reduzido em 50%\n`;
-            text += `• XP zerada\n\n`;
-            text += `✨ *SERÁ MANTIDO:*\n`;
-            text += `• Pets e equipamentos\n`;
-            text += `• Família, clã e relacionamento\n`;
-            text += `• Itens premium\n`;
-            text += `• Conquistas\n\n`;
-            text += `💡 Use ${prefix}evoluir confirmar`;
-          } else {
-            text += `❌ *Complete todos os requisitos!*\n`;
-            text += `💡 Dica: Trabalhe, batalhe e conquiste!`;
-          }
-
-          return reply(text);
+        if (!me.prestige) {
+          me.prestige = {
+            level: 0,
+            totalResets: 0,
+            bonusMultiplier: 1
+          };
         }
 
-        if (q !== 'confirmar') return reply('❌ Use "confirmar" para prestigiar');
+        const quantidade = parseInt(q, 10);
 
-        // Verificar todos os requisitos
-        if ((me.level || 1) < requiredLevel) {
-          return reply(`❌ Você precisa ser nível ${requiredLevel}!\n📊 Atual: ${me.level || 1}`);
+        if (!q || isNaN(quantidade) || quantidade < 1) {
+          return reply(`╭━━━⊱ 🌟 *EVOLUÇÃO / PRESTIGE* ⊱━━━╮
+│
+│ Use: ${prefix}evoluir 1
+│
+│ 💰 Preço: 700 moedas
+│ ✨ Sem requisitos extras!
+│
+╰━━━━━━━━━━━━━━━━━━━━━━╯`);
         }
 
-        if ((me.wallet || 0) < requiredCoins) {
-          return reply(`💰 Você precisa de ${requiredCoins.toLocaleString()} moedas na carteira!\n📊 Atual: ${(me.wallet || 0).toLocaleString()}`);
+        if (quantidade !== 1) {
+          return reply(`❌ Use apenas 1 evolução por vez.
+
+Exemplo:
+${prefix}evoluir 1`);
         }
 
-        if (currentTotalWealth < requiredTotalWealth) {
-          return reply(`💎 Você precisa de ${requiredTotalWealth.toLocaleString()} em riqueza total!\n📊 Atual: ${currentTotalWealth.toLocaleString()}`);
+        const preco = 700;
+        const carteiraAtual = me.wallet || 0;
+
+        if (carteiraAtual < preco) {
+          return reply(`❌ Você não tem moedas suficientes!
+
+💰 Preço: ${preco.toLocaleString()} moedas
+👛 Sua carteira: ${carteiraAtual.toLocaleString()} moedas`);
         }
 
-        if (currentAchievements < requiredAchievements) {
-          return reply(`🏆 Você precisa de ${requiredAchievements} conquistas!\n📊 Atual: ${currentAchievements}`);
-        }
+        const prestigeAnterior = me.prestige.level || 0;
 
-        if (currentBattlesWon < requiredBattlesWon) {
-          return reply(`⚔️ Você precisa vencer ${requiredBattlesWon} batalhas!\n📊 Atual: ${currentBattlesWon}`);
-        }
+        me.wallet = carteiraAtual - preco;
 
-        if (currentWorkTimes < requiredWorkTimes) {
-          return reply(`💼 Você precisa trabalhar ${requiredWorkTimes} vezes!\n📊 Atual: ${currentWorkTimes}`);
-        }
-
-        // Resetar com penalidades maiores (preservando estatísticas de batalha e trabalho)
-        me.level = 1;
-        me.exp = 0;
-        me.wallet = 0;
-        me.bank = Math.floor((me.bank || 0) * 0.5); // Mantém 50% do banco
-        // Preservar estatísticas de batalha e trabalho para progressão de prestige
-        const preservedBattlesWon = me.battlesWon || 0;
-        const preservedStats = me.stats ? { ...me.stats } : {};
-
-        me.prestige.level++;
-        me.prestige.totalResets++;
+        me.prestige.level = prestigeAnterior + 1;
+        me.prestige.totalResets = (me.prestige.totalResets || 0) + 1;
         me.prestige.bonusMultiplier = 1 + (me.prestige.level * 0.15);
 
-        // Restaurar estatísticas preservadas
-        me.battlesWon = preservedBattlesWon;
-        if (!me.stats) me.stats = {};
-        me.stats = { ...preservedStats };
+        if (!me.prestigeRewards) {
+          me.prestigeRewards = {};
+        }
 
-        // Bônus especiais por prestige
-        if (!me.prestigeRewards) me.prestigeRewards = {};
         me.prestigeRewards[`prestige_${me.prestige.level}`] = {
           title: `⭐ Prestige ${me.prestige.level}`,
           date: Date.now(),
           bonus: me.prestige.bonusMultiplier
         };
 
-        let text = `╭━━━⊱ 🌟✨ *PRESTIGIADO!* ✨🌟 ⊱━━━╮\n`;
-        text += `╰━━━━━━━━━━━━━━━━━━━━╯\n\n`;
-        text += `🎉 *PARABÉNS!*\n`;
-        text += `Você alcançou o Prestige ${me.prestige.level}!\n\n`;
-        text += `✨ Novo multiplicador: ${me.prestige.bonusMultiplier.toFixed(2)}x\n`;
-        text += `🔄 Total de resets: ${me.prestige.totalResets}\n`;
-        text += `🏅 Título: ⭐ Prestige ${me.prestige.level}\n\n`;
-        text += `💪 Você agora é MUITO mais forte!\n`;
-        text += `📈 Todos os ganhos multiplicados!\n\n`;
-        text += `🚀 Continue evoluindo para prestiges maiores!`;
-
         saveEconomy(econ);
-        return reply(text);
-        break;
+
+        return reply(`╭━━━⊱ 🌟✨ *EVOLUÇÃO CONCLUÍDA!* ✨🌟 ⊱━━━╮
+│
+│ 👤 *Jogador:* ${pushname}
+│ 🔱 *Prestige:* ${prestigeAnterior} → ${me.prestige.level}
+│ 💰 *Valor pago:* ${preco.toLocaleString()} moedas
+│ 👛 *Carteira restante:* ${me.wallet.toLocaleString()} moedas
+│ ✨ *Multiplicador:* ${me.prestige.bonusMultiplier.toFixed(2)}x
+│
+╰━━━━━━━━━━━━━━━━━━━━━━╯
+
+✅ Você evoluiu com sucesso!
+📈 Seu level e sua XP foram mantidos.`);
       }
 
       // Sistema de Investimentos
