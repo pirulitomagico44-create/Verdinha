@@ -1,33 +1,26 @@
 export default async function menu(prefix, botName = "MeuBot", userName = "Usuário", {
-    header = `╭━━━⊱ 🪷 *${botName}* ⊰━━━╮
-┃
-┃ (⁠・⁠∀⁠・⁠) Oii, #user#! 💚
-┃
-┃ Eu sou a ${botName}! 🌱
-┃ Tem bastante coisinha escondida por aqui hehe ✨
-┃
-┃ ୨୧ Escolhe uma categoria abaixo
-┃ pra abrir os comandos! 🫶
-┃
-╰━━━━━━━━━━━━━━━━━━━━━━╯`,
+    header = `╭┈⊰ 🌸 『 *${botName}* 』\n┊Olá, #user#!\n╰─┈┈┈┈┈◜❁◞┈┈┈┈┈─╯`,
     menuTopBorder = "╭┈",
     bottomBorder = "╰─┈┈┈┈┈◜❁◞┈┈┈┈┈─╯",
     menuTitleIcon = "🍧ฺꕸ▸",
-    menuItemIcon = "•.̇𖥨֗💚⭟",
+    menuItemIcon = "•.̇𖥨֗💜⭟",
     separatorIcon = "❁",
     middleBorder = "┊"
 } = {}) {
     const formattedHeader = header.replace(/#user#/g, userName);
     return `${formattedHeader}
 
-${menuTopBorder}${separatorIcon} *CATEGORIAS DA VERDINHA* ${separatorIcon}
-${middleBorder}${menuItemIcon}${prefix}menugeral
-${middleBorder}${menuItemIcon}${prefix}menubrincadeira
-${middleBorder}${menuItemIcon}${prefix}menusticker
-${middleBorder}${menuItemIcon}${prefix}menualteradores
-${middleBorder}${menuItemIcon}${prefix}menulogo
+${menuTopBorder}${separatorIcon} *CENTRAL DA VERDINHA*
+${middleBorder}
 ${middleBorder}${menuItemIcon}${prefix}menudown
-${middleBorder}${menuItemIcon}${prefix}menuferramentas
 ${middleBorder}${menuItemIcon}${prefix}menuadm
+${middleBorder}${menuItemIcon}${prefix}menubn
+${middleBorder}${menuItemIcon}${prefix}menudono
+${middleBorder}${menuItemIcon}${prefix}menumemb
+${middleBorder}${menuItemIcon}${prefix}ferramentas
+${middleBorder}${menuItemIcon}${prefix}menufig
+${middleBorder}${menuItemIcon}${prefix}alteradores
+${middleBorder}${menuItemIcon}${prefix}menurpg
+${middleBorder}${menuItemIcon}${prefix}menuvip
 ${bottomBorder}`;
 }
