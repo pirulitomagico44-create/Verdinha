@@ -1517,7 +1517,7 @@ async function createBotSocket(authDir) {
             if (messagesListenerAttached) return;
             messagesListenerAttached = true;
 
-            NazunaSock.ev.on('messages.upsert', async (m) => {
+            NazunaSock.ev.on('messages.upsert', async (m) => { console.log("📩 MENSAGEM RECEBIDA PELO LISTENER");
                 if (!m.messages || !Array.isArray(m.messages)) return;
 
 
