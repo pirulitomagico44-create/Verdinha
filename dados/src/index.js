@@ -9491,10 +9491,10 @@ Entre em contato com o dono do bot:
         ];
 
         const boss = bosses[Math.floor(Math.random() * bosses.length)];
-        const playerPower = (me.power || 100) + (me.level || 1) * 10;
+        const playerPower = (me.power || 100) + (me.level || 1) * 10 + (me.attackBonus || 0) + ((me.prestige?.level || 0) * 25);
 
         let bossHp = boss.hp;
-        let playerHp = 100 + (me.level || 1) * 5;
+        let playerHp = 100 + (me.level || 1) * 5 + (me.defenseBonus || 0) + ((me.prestige?.level || 0) * 20);
         let turns = 0;
         const maxTurns = 15;
 
@@ -9516,7 +9516,7 @@ Entre em contato com o dono do bot:
           }
 
           // Boss ataca
-          const bossDmg = Math.max(5, boss.attack - Math.floor(playerPower * 0.1) + Math.floor(Math.random() * 20));
+          const bossDmg = Math.max(5, boss.attack - Math.floor(playerPower * 0.1) - (me.defenseBonus || 0) - ((me.prestige?.level || 0) * 5) + Math.floor(Math.random() * 20));
           playerHp -= bossDmg;
 
           turns++;
@@ -9526,6 +9526,17 @@ Entre em contato com o dono do bot:
         me.stats = me.stats || {};
 
         if (bossHp <= 0) {
+          const xpGanho = Math.floor(boss.xp * 1.5 * (me.xpMultiplier || 1));
+          me.exp = (me.exp || 0) + xpGanho;
+          if (!me.level) me.level = 1;
+          let levelsGained = 0;
+          while (me.level < 100) {
+            const nextLevelXp = 100 * Math.pow(1.5, me.level - 1);
+            if (me.exp < nextLevelXp) break;
+            me.exp -= nextLevelXp;
+            me.level++;
+            levelsGained++;
+          }
           me.wallet += boss.reward;
           me.stats.bossesDefeated = (me.stats.bossesDefeated || 0) + 1;
 
@@ -9533,7 +9544,8 @@ Entre em contato com o dono do bot:
           battleLog += `│ Você derrotou ${boss.emoji} *${boss.name}*!\n`;
           battleLog += `│\n`;
           battleLog += `│ 💰 Recompensa: +${boss.reward.toLocaleString()}\n`;
-          battleLog += `│ ✨ XP: +${boss.xp}\n`;
+          battleLog += `│ ✨ XP: +${xpGanho}\n`;
+          if (levelsGained > 0) battleLog += `│ 🌟 Subiu ${levelsGained} nível(is)! Nível atual: ${me.level}\n`;
           battleLog += `│ 🏅 Bosses derrotados: ${me.stats.bossesDefeated}\n`;
           battleLog += `╰━━━━━━━━━━━━━━━━━━━━╯`;
         } else {
