@@ -1224,7 +1224,7 @@ async function NazuninhaBotExec(nazu, info, store, messagesCache, rentalExpirati
   function applyShopBonuses(user, econ) {
     let mineBonus = 0;
     let workBonus = 0;
-    let bankCapacity = 10000; // Capacidade padrão
+    let bankCapacity = Infinity; // Capacidade padrão
     let fishBonus = 0;
     let exploreBonus = 0;
     let huntBonus = 0;
