@@ -25974,6 +25974,7 @@ ${prefix}togglecmdvip premium_ia off`);
         break;
       case 'pack':
         try {
+          if (isGroup) return reply('🌷 Bb, o comando de packs só funciona no meu privado, tá? 💚 Assim a gente não enche o grupo de figurinhas KKKK ✨');
           if (!q) return reply(`🌷 Me fala o nome do pack, bb! 💚\nExemplo: ${prefix}pack gatos`);
 
           await reply(`🔎 Procurando um pack de *${q}* no Sticker.ly... 💚`);
