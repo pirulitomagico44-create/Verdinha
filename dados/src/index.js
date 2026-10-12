@@ -25972,6 +25972,55 @@ ${prefix}togglecmdvip premium_ia off`);
           await reply("🌷 Ih, bb! Aconteceu um probleminha por aqui. Tenta de novo daqui a pouquinho, tá? 💚");
         }
         break;
+      case 'pack':
+        try {
+          if (!q) return reply(`🌷 Me fala o nome do pack, bb! 💚\nExemplo: ${prefix}pack gatos`);
+
+          await reply(`🔎 Procurando um pack de *${q}* no Sticker.ly... 💚`);
+
+          const buscaRes = await fetch('https://zone.api.br/api/v1/stickerly/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q, qtd: 1 })
+          });
+
+          const busca = await buscaRes.json();
+          const pack = busca?.resultados?.[0];
+
+          if (!busca?.status || !pack?.shareUrl) {
+            return reply(`🥺 Não achei nenhum pack de *${q}* no Sticker.ly.`);
+          }
+
+          const downloadRes = await fetch('https://zone.api.br/api/v1/stickerly/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: pack.shareUrl })
+          });
+
+          const download = await downloadRes.json();
+          const dadosPack = download?.resultado;
+          const stickers = dadosPack?.stickers?.slice(0, 30) || [];
+
+          if (!download?.status || !stickers.length) {
+            return reply('🌷 Achei o pack, mas não consegui pegar as figurinhas dele.');
+          }
+
+          await reply(`💚 Achei *${dadosPack.name || pack.name}*!\n📦 ${stickers.length} figurinhas\n👤 ${dadosPack.author || pack.author}\n\nTô mandando, bb ✨`);
+
+          for (const fig of stickers) {
+            await nazu.sendMessage(from, {
+              sticker: { url: fig.url }
+            }, {
+              quoted: info
+            });
+          }
+
+        } catch (e) {
+          console.error('Erro no comando pack:', e);
+          await reply('🌷 Ih, bb! Não consegui buscar esse pack agora. Tenta de novo daqui a pouquinho 💚');
+        }
+        break;
+
       case 'figualeatoria':
       case 'randomsticker':
         try {
