@@ -26008,8 +26008,12 @@ ${prefix}togglecmdvip premium_ia off`);
           await reply(`💚 Achei *${dadosPack.name || pack.name}*!\n📦 ${stickers.length} figurinhas\n👤 ${dadosPack.author || pack.author}\n\nTô mandando, bb ✨`);
 
           for (const fig of stickers) {
-            await nazu.sendMessage(from, {
-              sticker: { url: fig.url }
+            await sendSticker(nazu, from, {
+              sticker: fig.url,
+              author: dadosPack.author || pack.author || 'Sticker.ly',
+              packname: dadosPack.name || pack.name || 'Verdinha',
+              type: fig.isAnimated ? 'video' : 'image',
+              forceSquare: false
             }, {
               quoted: info
             });
