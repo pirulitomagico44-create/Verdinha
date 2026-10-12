@@ -54,109 +54,100 @@ function guessAuthorName(title) {
   return 'YouTube'
 }
 
-async function search(query) {
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function youtubeJob(input, format = 'mp3', option = 128) {
   const checkAPI = await verificarAPI()
   if (checkAPI !== true) return { ok: false, msg: checkAPI }
 
   try {
     const { site_zone, apikey_zone } = CONFIG_FILE
-    const url = `${site_zone}/v2/player?text=${encodeURIComponent(query)}&apikey=${encodeURIComponent(apikey_zone)}`
+    const extra = format === 'mp3'
+      ? `&bitrate=${encodeURIComponent(option)}`
+      : `&quality=${encodeURIComponent(option)}`
 
-    const data = await request(url)
+    const createUrl = `${site_zone}/v3/youtube?apikey=${encodeURIComponent(apikey_zone)}&url=${encodeURIComponent(input)}&format=${format}${extra}`
+    const created = await request(createUrl)
 
-    const checkAfter = await verificarAPI(data)
-    if (checkAfter !== true) return { ok: false, msg: checkAfter }
-
-    if (!data?.status) {
-      return { ok: false, msg: data?.msg || 'Erro ao buscar vídeo' }
+    if (!created?.status || !created?.job_id) {
+      return { ok: false, msg: created?.msg || created?.error || 'Não foi possível criar o download.' }
     }
 
-    const seconds = parseDurationToSeconds(data.duration)
+    for (let i = 0; i < 60; i++) {
+      await sleep(2000)
 
-    return {
-      ok: true,
-      data: {
-        url: data.youtube_url,
-        title: data.title,
-        description: '',
-        thumbnail: data.thumbnail,
-        seconds,
-        timestamp: data.duration,
-        views: 0,
-        ago: '',
-        author: { name: guessAuthorName(data.title) },
-        downloadUrl: data.download_url
+      const data = await request(
+        `${site_zone}/v3/youtube-status?id=${encodeURIComponent(created.job_id)}`
+      )
+
+      if (data?.state === 'completed' && data?.download_url) {
+        return { ok: true, data }
+      }
+
+      if (data?.state === 'failed' || data?.state === 'error' || data?.status === false) {
+        return { ok: false, msg: data?.msg || data?.error || 'Falha ao processar o YouTube.' }
       }
     }
 
+    return { ok: false, msg: 'O download demorou demais.' }
   } catch (err) {
     return { ok: false, msg: err.message }
   }
 }
 
-async function mp3(url) {
-  const checkAPI = await verificarAPI()
-  if (checkAPI !== true) return { ok: false, msg: checkAPI }
+async function search(query) {
+  const result = await youtubeJob(query, 'mp3', 128)
+  if (!result.ok) return result
 
-  try {
-    const { site_zone, apikey_zone } = CONFIG_FILE
-    const api = `${site_zone}/v2/player?text=${encodeURIComponent(url)}&apikey=${encodeURIComponent(apikey_zone)}`
-
-    const data = await request(api)
-
-    const checkAfter = await verificarAPI(data)
-    if (checkAfter !== true) return { ok: false, msg: checkAfter }
-
-    if (!data?.status || !data?.download_url) {
-      return { ok: false, msg: data?.msg || 'URL de download não encontrada' }
+  const d = result.data
+  return {
+    ok: true,
+    data: {
+      url: query,
+      title: d.title || 'YouTube',
+      description: '',
+      thumbnail: d.thumbnail_url || '',
+      seconds: d.duration_seconds || 0,
+      timestamp: d.duration || '',
+      views: 0,
+      ago: '',
+      author: { name: d.author_name || 'YouTube' },
+      downloadUrl: d.download_url
     }
-
-    const buffer = await downloadFile(data.download_url)
-
-    return {
-      ok: true,
-      buffer,
-      title: data.title || 'YouTube Audio',
-      thumbnail: data.thumbnail || '',
-      filename: `${(data.title || 'audio').replace(/[^\w\s]/gi, '')}.mp3`
-    }
-
-  } catch (err) {
-    return { ok: false, msg: err.message }
   }
 }
 
-async function mp4(url) {
-  const checkAPI = await verificarAPI()
-  if (checkAPI !== true) return { ok: false, msg: checkAPI }
+async function mp3(input, bitrate = 128) {
+  const result = await youtubeJob(input, 'mp3', bitrate)
+  if (!result.ok) return result
 
-  try {
-    const { site_zone, apikey_zone } = CONFIG_FILE
-    const api = `${site_zone}/api/ytmp4?text=${encodeURIComponent(url)}&quality=720p&apikey=${encodeURIComponent(apikey_zone)}`
+  const d = result.data
+  const buffer = await downloadFile(d.download_url)
 
-    const data = await request(api)
+  return {
+    ok: true,
+    buffer,
+    title: d.title || 'YouTube Audio',
+    thumbnail: d.thumbnail_url || '',
+    filename: `${(d.title || 'audio').replace(/[^\w\s-]/gi, '')}.mp3`
+  }
+}
 
-    const checkAfter = await verificarAPI(data)
-    if (checkAfter !== true) return { ok: false, msg: checkAfter }
+async function mp4(input, quality = 720) {
+  const result = await youtubeJob(input, 'mp4', quality)
+  if (!result.ok) return result
 
-    const resposta = data?.result
+  const d = result.data
+  const buffer = await downloadFile(d.download_url)
 
-    if (!data?.status || !resposta?.download) {
-      return { ok: false, msg: data?.error || 'URL de download não encontrada' }
-    }
-
-    const buffer = await downloadFile(resposta.download)
-
-    return {
-      ok: true,
-      buffer,
-      title: resposta.title || 'YouTube Video',
-      thumbnail: resposta.thumbnail || '',
-      filename: `${(resposta.title || 'video').replace(/[^\w\s]/gi, '')}.mp4`
-    }
-
-  } catch (err) {
-    return { ok: false, msg: err.message }
+  return {
+    ok: true,
+    buffer,
+    title: d.title || 'YouTube Video',
+    thumbnail: d.thumbnail_url || '',
+    filename: `${(d.title || 'video').replace(/[^\w\s-]/gi, '')}.mp4`
   }
 }
 
