@@ -114,12 +114,41 @@ async function search(query) {
       views: 0,
       ago: '',
       author: { name: d.author_name || 'YouTube' },
-      downloadUrl: d.download_url
+      downloadUrl: d.download_url,
+      originalQuery: query
     }
   }
 }
 
+let lastSearch = null
+
+const originalSearch = search
+search = async function(query) {
+  const result = await originalSearch(query)
+  if (result?.ok) lastSearch = result.data
+  return result
+}
+
 async function mp3(input, bitrate = 128) {
+  if (lastSearch?.originalQuery === input && lastSearch?.downloadUrl) {
+    try {
+      const buffer = await downloadFile(lastSearch.downloadUrl)
+      const cached = lastSearch
+      lastSearch = null
+
+      return {
+        ok: true,
+        buffer,
+        title: cached.title || 'YouTube Audio',
+        thumbnail: cached.thumbnail || '',
+        filename: `${(cached.title || 'audio').replace(/[^\w\s-]/gi, '')}.mp3`
+      }
+    } catch (err) {
+      lastSearch = null
+      return { ok: false, msg: err.message }
+    }
+  }
+
   const result = await youtubeJob(input, 'mp3', bitrate)
   if (!result.ok) return result
 
